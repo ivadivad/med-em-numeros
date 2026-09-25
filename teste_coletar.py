@@ -77,5 +77,16 @@ class TesteMontarUrl(unittest.TestCase):
         self.assertIn("@DataBase='202201'", url)
 
 
+class TesteGerarMeses(unittest.TestCase):
+    def test_virada_de_ano(self):
+        self.assertEqual(
+            coletar.gerar_meses(202411, 202502),
+            [202411, 202412, 202501, 202502],
+        )
+
+    def test_mesmo_mes(self):
+        self.assertEqual(coletar.gerar_meses(202401, 202401), [202401])
+
+
 if __name__ == "__main__":
     unittest.main()

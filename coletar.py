@@ -6,6 +6,7 @@ import json
 import sys
 import urllib.error
 import urllib.request
+from datetime import date
 
 BASE = "https://olinda.bcb.gov.br/olinda/servico/Pix_DadosAbertos/versao/v1/odata"
 
@@ -56,6 +57,28 @@ def montar_url(entidade, parametro, valor):
         f"{BASE}/{entidade}({parametro}=@{parametro})"
         f"?@{parametro}='{valor}'&$format=json"
     )
+
+
+def gerar_meses(desde, ate=None):
+    """Lista de AAAAMM de `desde` ate `ate`, inclusive, mes a mes.
+
+    `ate` default: mes corrente.
+    """
+    if ate is None:
+        hoje = date.today()
+        ate = hoje.year * 100 + hoje.month
+
+    ano, mes = divmod(desde, 100)
+    fim_ano, fim_mes = divmod(ate, 100)
+
+    meses = []
+    while (ano, mes) <= (fim_ano, fim_mes):
+        meses.append(ano * 100 + mes)
+        mes += 1
+        if mes > 12:
+            mes = 1
+            ano += 1
+    return meses
 
 
 def main(argv):
