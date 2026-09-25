@@ -8,3 +8,6 @@ venv/
 .idea/
 .DS_Store
 Thumbs.db
+
+# roteiro de commits — uso pessoal, não faz parte do entregável público
+PLANO.md
