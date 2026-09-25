@@ -3,6 +3,9 @@
 Uso: python teste_coletar.py
 """
 import io
+import os
+import shutil
+import tempfile
 import unittest
 from unittest.mock import patch, MagicMock
 from urllib.error import HTTPError, URLError
@@ -159,6 +162,42 @@ class TesteColetarTabelaPontaAPonta(unittest.TestCase):
         linhas2, _ = coletar.coletar_tabela("fraude")
         self.assertEqual(linhas1, linhas2)
         self.assertEqual(len(linhas1), 1)
+
+
+class TesteGravacao(unittest.TestCase):
+    def setUp(self):
+        self.pasta = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.pasta)
+
+    def test_csv_uniao_de_colunas(self):
+        linhas = [{"a": 1, "b": 2}, {"a": 3, "c": 4}]
+        caminho = os.path.join(self.pasta, "saida.csv")
+        coletar.gravar_csv(linhas, caminho)
+        with open(caminho, encoding="utf-8") as arquivo:
+            cabecalho = arquivo.readline().strip()
+        self.assertEqual(cabecalho, "a,b,c")
+
+    def test_snapshot_nao_sobrescreve(self):
+        caminho = coletar.gravar_snapshot(
+            [{"a": 1}], "fraude", pasta=self.pasta, hoje="2026-01-01"
+        )
+        with open(caminho, encoding="utf-8") as arquivo:
+            original = arquivo.read()
+
+        coletar.gravar_snapshot([{"a": 999}], "fraude", pasta=self.pasta, hoje="2026-01-01")
+        with open(caminho, encoding="utf-8") as arquivo:
+            self.assertEqual(arquivo.read(), original)
+
+    def test_cobertura(self):
+        cobertura = {202201: (10, "ok"), 202202: (0, "vazio")}
+        caminho = os.path.join(self.pasta, "cobertura.csv")
+        coletar.gravar_cobertura(cobertura, caminho)
+        with open(caminho, encoding="utf-8") as arquivo:
+            linhas = arquivo.read().splitlines()
+        self.assertEqual(linhas[0], "AnoMes,linhas,situacao")
+        self.assertEqual(linhas[1], "202201,10,ok")
 
 
 if __name__ == "__main__":

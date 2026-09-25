@@ -2,7 +2,9 @@
 
 Uso: python coletar.py <tabela>
 """
+import csv
 import json
+import os
 import sys
 import time
 import urllib.error
@@ -169,6 +171,46 @@ def coletar_tabela(tabela, desde=None):
         cobertura[mes] = (len(linhas), situacao)
         linhas_totais.extend(linhas)
     return deduplicar(linhas_totais), cobertura
+
+
+def gravar_csv(linhas, caminho):
+    """Grava o CSV consolidado. Colunas: uniao de todas as linhas, sem perder campo."""
+    colunas = []
+    vistas = set()
+    for linha in linhas:
+        for chave in linha:
+            if chave not in vistas:
+                vistas.add(chave)
+                colunas.append(chave)
+
+    os.makedirs(os.path.dirname(caminho) or ".", exist_ok=True)
+    with open(caminho, "w", newline="", encoding="utf-8") as arquivo:
+        escritor = csv.DictWriter(arquivo, fieldnames=colunas)
+        escritor.writeheader()
+        escritor.writerows(linhas)
+
+
+def gravar_snapshot(linhas, tabela, pasta="dados/snapshots", hoje=None):
+    """Grava um retrato datado da coleta. Nunca sobrescreve um ja existente."""
+    hoje = hoje or date.today().isoformat()
+    caminho = os.path.join(pasta, f"{tabela}_{hoje}.json")
+    if os.path.exists(caminho):
+        return caminho
+
+    os.makedirs(pasta, exist_ok=True)
+    with open(caminho, "w", encoding="utf-8") as arquivo:
+        json.dump(linhas, arquivo, ensure_ascii=False, indent=2)
+    return caminho
+
+
+def gravar_cobertura(cobertura, caminho):
+    """Grava quais meses existem, quantas linhas e a situacao de cada um."""
+    os.makedirs(os.path.dirname(caminho) or ".", exist_ok=True)
+    with open(caminho, "w", newline="", encoding="utf-8") as arquivo:
+        escritor = csv.writer(arquivo)
+        escritor.writerow(["AnoMes", "linhas", "situacao"])
+        for mes, (qtde, situacao) in sorted(cobertura.items()):
+            escritor.writerow([mes, qtde, situacao])
 
 
 def main(argv):
