@@ -2,6 +2,7 @@
 
 Uso: python coletar.py <tabela>
 """
+import json
 import sys
 import urllib.error
 import urllib.request
@@ -26,6 +27,27 @@ def requisitar(url, timeout=30):
         return erro.code, erro.read().decode("utf-8", errors="replace")
     except OSError:
         return None, None
+
+
+def desembrulhar(corpo):
+    """Remove o comentario /* ... */ que embrulha a resposta da Olinda.
+
+    Devolve None se o corpo estiver vazio ou nao for JSON valido (ex: HTML
+    de pagina de erro).
+    """
+    if not corpo:
+        return None
+
+    texto = corpo
+    if texto.lstrip().startswith("/*"):
+        fim = texto.find("*/")
+        if fim != -1:
+            texto = texto[fim + 2 :]
+
+    try:
+        return json.loads(texto)
+    except (json.JSONDecodeError, ValueError):
+        return None
 
 
 def main(argv):

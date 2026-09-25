@@ -47,5 +47,23 @@ class TesteRequisitar(unittest.TestCase):
         self.assertIsNone(corpo)
 
 
+class TesteDesembrulhar(unittest.TestCase):
+    def test_json_embrulhado(self):
+        corpo = '/**/{"value": [1, 2]}'
+        self.assertEqual(coletar.desembrulhar(corpo), {"value": [1, 2]})
+
+    def test_json_puro(self):
+        corpo = '{"value": [1, 2]}'
+        self.assertEqual(coletar.desembrulhar(corpo), {"value": [1, 2]})
+
+    def test_html_devolve_none(self):
+        corpo = "<html><body>erro</body></html>"
+        self.assertIsNone(coletar.desembrulhar(corpo))
+
+    def test_corpo_vazio_devolve_none(self):
+        self.assertIsNone(coletar.desembrulhar(""))
+        self.assertIsNone(coletar.desembrulhar(None))
+
+
 if __name__ == "__main__":
     unittest.main()
