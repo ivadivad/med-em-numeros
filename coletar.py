@@ -1,10 +1,10 @@
 """Coletor dos dados abertos de Pix do BCB (plataforma Olinda).
 
 Uso: python coletar.py <tabela>
-
-Etapa 1 do PLANO.md — a implementar.
 """
 import sys
+import urllib.error
+import urllib.request
 
 BASE = "https://olinda.bcb.gov.br/olinda/servico/Pix_DadosAbertos/versao/v1/odata"
 
@@ -15,6 +15,17 @@ TABELAS = {
     "municipio": ("TransacoesPixPorMunicipio", "DataBase"),
     "cnae": ("CnaePorteRecebedor", "Database"),
 }
+
+
+def requisitar(url, timeout=30):
+    """Faz um GET e devolve (status, corpo). Nunca levanta excecao."""
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as resposta:
+            return resposta.status, resposta.read().decode("utf-8")
+    except urllib.error.HTTPError as erro:
+        return erro.code, erro.read().decode("utf-8", errors="replace")
+    except OSError:
+        return None, None
 
 
 def main(argv):

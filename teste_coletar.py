@@ -1,14 +1,50 @@
 """Testes do coletor.
 
 Uso: python teste_coletar.py
-
-Etapa 1 do PLANO.md — a implementar.
 """
+import io
 import unittest
+from unittest.mock import patch, MagicMock
+from urllib.error import HTTPError, URLError
+
+import coletar
 
 
-class TesteColetor(unittest.TestCase):
-    pass
+class TesteRequisitar(unittest.TestCase):
+    @patch("coletar.urllib.request.urlopen")
+    def test_200(self, urlopen_mock):
+        resposta = MagicMock()
+        resposta.status = 200
+        resposta.read.return_value = b'{"ok": true}'
+        resposta.__enter__.return_value = resposta
+        urlopen_mock.return_value = resposta
+
+        status, corpo = coletar.requisitar("http://exemplo")
+        self.assertEqual(status, 200)
+        self.assertEqual(corpo, '{"ok": true}')
+
+    @patch("coletar.urllib.request.urlopen")
+    def test_400(self, urlopen_mock):
+        urlopen_mock.side_effect = HTTPError(
+            "http://exemplo", 400, "Bad Request", {}, io.BytesIO(b"parametro invalido")
+        )
+        status, corpo = coletar.requisitar("http://exemplo")
+        self.assertEqual(status, 400)
+
+    @patch("coletar.urllib.request.urlopen")
+    def test_500(self, urlopen_mock):
+        urlopen_mock.side_effect = HTTPError(
+            "http://exemplo", 500, "Server Error", {}, io.BytesIO(b"erro interno")
+        )
+        status, _ = coletar.requisitar("http://exemplo")
+        self.assertEqual(status, 500)
+
+    @patch("coletar.urllib.request.urlopen")
+    def test_falha_de_rede_nao_levanta_excecao(self, urlopen_mock):
+        urlopen_mock.side_effect = URLError("timed out")
+        status, corpo = coletar.requisitar("http://exemplo")
+        self.assertIsNone(status)
+        self.assertIsNone(corpo)
 
 
 if __name__ == "__main__":
