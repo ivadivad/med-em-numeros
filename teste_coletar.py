@@ -129,5 +129,37 @@ class TesteColetarMes(unittest.TestCase):
         self.assertEqual(len(linhas), 1)
 
 
+class TesteDeduplicar(unittest.TestCase):
+    def test_remove_duplicata_exata(self):
+        linhas = [{"AnoMes": 202201, "valor": 10}, {"AnoMes": 202201, "valor": 10}]
+        self.assertEqual(len(coletar.deduplicar(linhas)), 1)
+
+    def test_tipos_diferentes_sao_a_mesma_linha(self):
+        # a API devolve numero, o CSV relido devolve texto
+        linhas = [{"AnoMes": 202201}, {"AnoMes": "202201"}]
+        self.assertEqual(len(coletar.deduplicar(linhas)), 1)
+
+    def test_campo_ausente_e_vazio_sao_iguais(self):
+        linhas = [{"AnoMes": 202201, "obs": ""}, {"AnoMes": 202201}]
+        self.assertEqual(len(coletar.deduplicar(linhas)), 1)
+
+    def test_linhas_diferentes_nao_somem(self):
+        linhas = [{"AnoMes": 202201}, {"AnoMes": 202202}]
+        self.assertEqual(len(coletar.deduplicar(linhas)), 2)
+
+
+class TesteColetarTabelaPontaAPonta(unittest.TestCase):
+    @patch("coletar.coletar_mes")
+    @patch("coletar.gerar_meses")
+    def test_rodar_duas_vezes_nao_dobra(self, gerar_meses_mock, coletar_mes_mock):
+        gerar_meses_mock.return_value = [202201]
+        coletar_mes_mock.return_value = ([{"AnoMes": 202201, "valor": 1}], "ok")
+
+        linhas1, _ = coletar.coletar_tabela("fraude")
+        linhas2, _ = coletar.coletar_tabela("fraude")
+        self.assertEqual(linhas1, linhas2)
+        self.assertEqual(len(linhas1), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -19,6 +19,14 @@ TABELAS = {
     "cnae": ("CnaePorteRecebedor", "Database"),
 }
 
+# primeiro mes com dado disponivel, por tabela
+DESDE_PADRAO = {
+    "fraude": 202201,
+    "transacoes": 202011,
+    "municipio": 202011,
+    "cnae": 202011,
+}
+
 TENTATIVAS = 3
 ESPERA_BASE = 1  # segundos; cresce a cada nova tentativa
 
@@ -113,6 +121,54 @@ def coletar_mes(tabela, mes):
         return [], "falha_rede"
 
     return [], "falha_rede"
+
+
+def _normalizar(valor):
+    """None e "" contam como iguais; tudo vira texto pra comparar.
+
+    A API devolve AnoMes como número, o CSV relido devolve como texto.
+    Sem normalizar, o consolidado dobra a cada rodada.
+    """
+    if valor is None or valor == "":
+        return ""
+    return str(valor)
+
+
+def impressao_digital(linha, colunas):
+    """Chave unica a partir do conteudo da linha, insensivel a tipo.
+
+    `colunas` vem de fora (a uniao de todas as linhas do lote) para que uma
+    coluna ausente e uma coluna vazia gerem a mesma chave.
+    """
+    return tuple(_normalizar(linha.get(coluna)) for coluna in sorted(colunas))
+
+
+def deduplicar(linhas):
+    """Remove linhas repetidas, comparando pelo conteudo, nao pela origem."""
+    colunas = set()
+    for linha in linhas:
+        colunas.update(linha)
+
+    vistas = set()
+    unicas = []
+    for linha in linhas:
+        chave = impressao_digital(linha, colunas)
+        if chave not in vistas:
+            vistas.add(chave)
+            unicas.append(linha)
+    return unicas
+
+
+def coletar_tabela(tabela, desde=None):
+    """Varre todos os meses de uma tabela. Devolve (linhas, cobertura)."""
+    desde = desde or DESDE_PADRAO[tabela]
+    linhas_totais = []
+    cobertura = {}
+    for mes in gerar_meses(desde):
+        linhas, situacao = coletar_mes(tabela, mes)
+        cobertura[mes] = (len(linhas), situacao)
+        linhas_totais.extend(linhas)
+    return deduplicar(linhas_totais), cobertura
 
 
 def main(argv):
