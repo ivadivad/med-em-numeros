@@ -50,6 +50,14 @@ def desembrulhar(corpo):
         return None
 
 
+def montar_url(entidade, parametro, valor):
+    """Monta a URL no formato exigido pela Olinda: Entidade(Param=@Param)."""
+    return (
+        f"{BASE}/{entidade}({parametro}=@{parametro})"
+        f"?@{parametro}='{valor}'&$format=json"
+    )
+
+
 def main(argv):
     raise NotImplementedError("etapa 1")
 

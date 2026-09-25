@@ -65,5 +65,17 @@ class TesteDesembrulhar(unittest.TestCase):
         self.assertIsNone(coletar.desembrulhar(None))
 
 
+class TesteMontarUrl(unittest.TestCase):
+    def test_database_com_d_minusculo(self):
+        url = coletar.montar_url("EstatisticasFraudesPix", "Database", 202201)
+        self.assertIn("Database=@Database", url)
+        self.assertIn("@Database='202201'", url)
+
+    def test_database_com_b_maiusculo(self):
+        url = coletar.montar_url("TransacoesPixPorMunicipio", "DataBase", 202201)
+        self.assertIn("DataBase=@DataBase", url)
+        self.assertIn("@DataBase='202201'", url)
+
+
 if __name__ == "__main__":
     unittest.main()
