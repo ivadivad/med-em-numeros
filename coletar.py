@@ -4,6 +4,7 @@ Uso: python coletar.py <tabela>
 """
 import json
 import sys
+import time
 import urllib.error
 import urllib.request
 from datetime import date
@@ -17,6 +18,9 @@ TABELAS = {
     "municipio": ("TransacoesPixPorMunicipio", "DataBase"),
     "cnae": ("CnaePorteRecebedor", "Database"),
 }
+
+TENTATIVAS = 3
+ESPERA_BASE = 1  # segundos; cresce a cada nova tentativa
 
 
 def requisitar(url, timeout=30):
@@ -79,6 +83,36 @@ def gerar_meses(desde, ate=None):
             mes = 1
             ano += 1
     return meses
+
+
+def coletar_mes(tabela, mes):
+    """Busca os dados de um mes. Devolve (linhas, situacao).
+
+    situacao: "ok", "vazio", "erro_400" ou "falha_rede".
+    Reentrega em erro 500 com espera crescente; erro 400 nao reentrega,
+    porque parametro errado nao melhora tentando de novo.
+    """
+    entidade, parametro = TABELAS[tabela]
+    url = montar_url(entidade, parametro, mes)
+
+    for tentativa in range(TENTATIVAS):
+        status, corpo = requisitar(url)
+
+        if status == 400:
+            return [], "erro_400"
+
+        if status == 200:
+            dados = desembrulhar(corpo)
+            linhas = dados.get("value", []) if dados else []
+            return linhas, ("ok" if linhas else "vazio")
+
+        if status == 500 and tentativa < TENTATIVAS - 1:
+            time.sleep(ESPERA_BASE * (tentativa + 1))
+            continue
+
+        return [], "falha_rede"
+
+    return [], "falha_rede"
 
 
 def main(argv):

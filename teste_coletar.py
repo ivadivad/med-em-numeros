@@ -88,5 +88,46 @@ class TesteGerarMeses(unittest.TestCase):
         self.assertEqual(coletar.gerar_meses(202401, 202401), [202401])
 
 
+class TesteColetarMes(unittest.TestCase):
+    @patch("coletar.requisitar")
+    def test_sucesso(self, requisitar_mock):
+        requisitar_mock.return_value = (200, '{"value": [{"AnoMes": 202201}]}')
+        linhas, situacao = coletar.coletar_mes("fraude", 202201)
+        self.assertEqual(linhas, [{"AnoMes": 202201}])
+        self.assertEqual(situacao, "ok")
+
+    @patch("coletar.requisitar")
+    def test_mes_vazio(self, requisitar_mock):
+        requisitar_mock.return_value = (200, '{"value": []}')
+        linhas, situacao = coletar.coletar_mes("fraude", 202201)
+        self.assertEqual(linhas, [])
+        self.assertEqual(situacao, "vazio")
+
+    @patch("coletar.requisitar")
+    def test_erro_400_nao_reentrega(self, requisitar_mock):
+        requisitar_mock.return_value = (400, "parametro invalido")
+        coletar.coletar_mes("fraude", 202201)
+        self.assertEqual(requisitar_mock.call_count, 1)
+
+    @patch("coletar.time.sleep", return_value=None)
+    @patch("coletar.requisitar")
+    def test_erro_500_reentrega_e_desiste(self, requisitar_mock, sleep_mock):
+        requisitar_mock.return_value = (500, "erro interno")
+        _, situacao = coletar.coletar_mes("fraude", 202201)
+        self.assertEqual(requisitar_mock.call_count, coletar.TENTATIVAS)
+        self.assertEqual(situacao, "falha_rede")
+
+    @patch("coletar.time.sleep", return_value=None)
+    @patch("coletar.requisitar")
+    def test_500_depois_sucesso(self, requisitar_mock, sleep_mock):
+        requisitar_mock.side_effect = [
+            (500, "erro interno"),
+            (200, '{"value": [{"AnoMes": 202201}]}'),
+        ]
+        linhas, situacao = coletar.coletar_mes("fraude", 202201)
+        self.assertEqual(situacao, "ok")
+        self.assertEqual(len(linhas), 1)
+
+
 if __name__ == "__main__":
     unittest.main()
