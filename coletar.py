@@ -2,6 +2,7 @@
 
 Uso: python coletar.py <tabela>
 """
+import argparse
 import csv
 import json
 import os
@@ -214,7 +215,25 @@ def gravar_cobertura(cobertura, caminho):
 
 
 def main(argv):
-    raise NotImplementedError("etapa 1")
+    parser = argparse.ArgumentParser(description="Coletor de dados abertos de Pix do BCB")
+    parser.add_argument("tabela", nargs="?", choices=sorted(TABELAS), help="tabela a coletar")
+    parser.add_argument("--desde", type=int, help="mes inicial, formato AAAAMM")
+    parser.add_argument("--listar", action="store_true", help="lista as tabelas disponiveis e sai")
+    args = parser.parse_args(argv)
+
+    if args.listar or not args.tabela:
+        for nome, (entidade, parametro) in TABELAS.items():
+            print(f"{nome:12} {entidade} (@{parametro}, desde {DESDE_PADRAO[nome]})")
+        return 0
+
+    linhas, cobertura = coletar_tabela(args.tabela, args.desde)
+    gravar_csv(linhas, f"dados/{args.tabela}.csv")
+    gravar_snapshot(linhas, args.tabela)
+    gravar_cobertura(cobertura, f"dados/{args.tabela}_cobertura.csv")
+
+    meses_ok = sum(1 for _, situacao in cobertura.values() if situacao == "ok")
+    print(f"{args.tabela}: {len(linhas)} linhas em {meses_ok}/{len(cobertura)} meses")
+    return 0
 
 
 if __name__ == "__main__":
