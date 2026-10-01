@@ -35,7 +35,7 @@ Abertos do Banco Central.
 | `ValorPixdevolvidosintegralmente` | Decimal | Valor em reais devolvido integralmente. |
 | `QuantidadedevolvidaparcialmentepormeiodoMED` | Decimal | Quantidade de casos com devolução parcial — provavelmente quando só parte do saldo ainda estava disponível na conta de destino no momento do bloqueio. |
 | `ValorPixdevolvidosparcialmente` | Decimal | Valor em reais devolvido parcialmente. |
-| `PercentualdeDevolucao` | Decimal | Coluna derivada. Varia de 2,86% a 16,23% no período, média 8,72%. Fórmula exata ainda não confirmada — é o objetivo da etapa 3. |
+| `PercentualdeDevolucao` | Decimal | Coluna derivada. Varia de 2,86% a 16,23% no período, média 8,72%. **Fórmula confirmada na etapa 3** (`notebooks/02-validacao.ipynb`): `(ValorPixdevolvidosintegralmente + ValorPixdevolvidosparcialmente) / ValorPixcontestadosaceitos × 100`. Erro máximo de 0,0049 ponto percentual nos 52 meses — é sobre valor, não quantidade de casos, e o denominador é o valor já **aceito**, não o total solicitado antes do crivo da instituição. |
 
 ## Não devolvidos, por motivo
 
@@ -75,9 +75,12 @@ sabendo o que ela não sabe.
 - `ValorPixresidualnaodevolvido` não é explicado pelos três motivos somados
   nem por `contestado − devolvido`. Falta pelo menos uma fonte de valor na
   conta — bloqueio cautelar ainda não liberado, nem devolvido, é candidato.
-  Vale revisitar isso com mais atenção na etapa 3.
-- Devolução parcial entra no numerador do percentual pelo valor devolvido ou
-  pela quantidade de casos? (etapa 3 resolve isso junto com a fórmula)
+  **Continua aberto** — a etapa 3 confirmou a fórmula de `PercentualdeDevolucao`,
+  mas não essa outra conta; não investiguei mais a fundo por não ser o
+  objetivo da etapa.
+- ~~Devolução parcial entra no numerador do percentual pelo valor devolvido ou
+  pela quantidade de casos?~~ **Resolvido na etapa 3:** pelo valor — ver
+  fórmula confirmada acima, em "Devoluções".
 - O que exatamente cai em "motivos diversos"?
 - Bloqueio cautelar "liberado" volta pro remetente, fica com quem recebeu, ou
   é outra coisa? A documentação da Olinda não detalha o fluxo.
