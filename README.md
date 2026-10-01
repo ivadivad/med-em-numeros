@@ -29,7 +29,7 @@ São três perguntas encadeadas:
 
 ## Progresso
 
-- [ ] **0.** Repositório e pergunta
+- [x] **0.** Repositório e pergunta
 - [ ] **1.** Coletor de dados da API
 - [ ] **2.** Primeiro contato com os dados
 - [ ] **3.** Validação da base
