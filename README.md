@@ -31,7 +31,7 @@ São três perguntas encadeadas:
 
 - [x] **0.** Repositório e pergunta
 - [x] **1.** Coletor de dados da API
-- [ ] **2.** Primeiro contato com os dados
+- [x] **2.** Primeiro contato com os dados
 - [ ] **3.** Validação da base
 - [ ] **4.** Primeiro gráfico
 - [ ] **5.** Volume de contestações
