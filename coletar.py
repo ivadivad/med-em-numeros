@@ -30,6 +30,18 @@ DESDE_PADRAO = {
     "cnae": 202011,
 }
 
+# coluna(s) que identificam uma linha de forma unica, por tabela — usado na
+# deduplicacao. A Olinda devolve, numa unica consulta, todos os meses a
+# partir do parametro pedido (nao so aquele mes); por isso o mesmo mes pode
+# vir embutido em mais de uma consulta do sweep, e em meses recentes (ainda
+# sendo atualizados pelo BCB) os valores podem divergir entre uma consulta e
+# outra feitas na mesma coleta. Tabelas sem entrada aqui caem no fallback:
+# deduplicar pelo conteudo inteiro da linha.
+CHAVE_UNICA = {
+    "fraude": ("AnoMes",),
+    "transacoes": ("AnoMes",),
+}
+
 TENTATIVAS = 3
 ESPERA_BASE = 1  # segundos; cresce a cada nova tentativa
 
@@ -100,8 +112,9 @@ def coletar_mes(tabela, mes):
     """Busca os dados de um mes. Devolve (linhas, situacao).
 
     situacao: "ok", "vazio", "erro_400" ou "falha_rede".
-    Reentrega em erro 500 com espera crescente; erro 400 nao reentrega,
-    porque parametro errado nao melhora tentando de novo.
+    Reentrega em erro 500 e em falha de rede (status None — timeout ou conexao
+    recusada), com espera crescente. Erro 400 nao reentrega, porque parametro
+    errado nao melhora tentando de novo.
     """
     entidade, parametro = TABELAS[tabela]
     url = montar_url(entidade, parametro, mes)
@@ -117,7 +130,7 @@ def coletar_mes(tabela, mes):
             linhas = dados.get("value", []) if dados else []
             return linhas, ("ok" if linhas else "vazio")
 
-        if status == 500 and tentativa < TENTATIVAS - 1:
+        if status in (500, None) and tentativa < TENTATIVAS - 1:
             time.sleep(ESPERA_BASE * (tentativa + 1))
             continue
 
@@ -146,20 +159,23 @@ def impressao_digital(linha, colunas):
     return tuple(_normalizar(linha.get(coluna)) for coluna in sorted(colunas))
 
 
-def deduplicar(linhas):
-    """Remove linhas repetidas, comparando pelo conteudo, nao pela origem."""
+def deduplicar(linhas, colunas_chave=None):
+    """Remove linhas repetidas. Fica a ultima ocorrencia de cada chave.
+
+    Sem `colunas_chave`, a chave e o conteudo inteiro da linha (duas linhas
+    so colidem se forem identicas). Com `colunas_chave`, a chave e so essas
+    colunas — util quando a mesma linha pode vir com valores levemente
+    diferentes em consultas diferentes (ver `CHAVE_UNICA`).
+    """
     colunas = set()
     for linha in linhas:
         colunas.update(linha)
 
-    vistas = set()
-    unicas = []
+    vistas = {}
     for linha in linhas:
-        chave = impressao_digital(linha, colunas)
-        if chave not in vistas:
-            vistas.add(chave)
-            unicas.append(linha)
-    return unicas
+        chave = impressao_digital(linha, colunas_chave or colunas)
+        vistas[chave] = linha
+    return list(vistas.values())
 
 
 def coletar_tabela(tabela, desde=None):
@@ -171,7 +187,7 @@ def coletar_tabela(tabela, desde=None):
         linhas, situacao = coletar_mes(tabela, mes)
         cobertura[mes] = (len(linhas), situacao)
         linhas_totais.extend(linhas)
-    return deduplicar(linhas_totais), cobertura
+    return deduplicar(linhas_totais, CHAVE_UNICA.get(tabela)), cobertura
 
 
 def gravar_csv(linhas, caminho):

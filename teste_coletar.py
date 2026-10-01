@@ -131,6 +131,26 @@ class TesteColetarMes(unittest.TestCase):
         self.assertEqual(situacao, "ok")
         self.assertEqual(len(linhas), 1)
 
+    @patch("coletar.time.sleep", return_value=None)
+    @patch("coletar.requisitar")
+    def test_falha_de_rede_tambem_reentrega(self, requisitar_mock, sleep_mock):
+        # status None é o que requisitar() devolve em timeout/conexão recusada
+        requisitar_mock.return_value = (None, None)
+        _, situacao = coletar.coletar_mes("fraude", 202201)
+        self.assertEqual(requisitar_mock.call_count, coletar.TENTATIVAS)
+        self.assertEqual(situacao, "falha_rede")
+
+    @patch("coletar.time.sleep", return_value=None)
+    @patch("coletar.requisitar")
+    def test_falha_de_rede_depois_sucesso(self, requisitar_mock, sleep_mock):
+        requisitar_mock.side_effect = [
+            (None, None),
+            (200, '{"value": [{"AnoMes": 202201}]}'),
+        ]
+        linhas, situacao = coletar.coletar_mes("fraude", 202201)
+        self.assertEqual(situacao, "ok")
+        self.assertEqual(len(linhas), 1)
+
 
 class TesteDeduplicar(unittest.TestCase):
     def test_remove_duplicata_exata(self):
@@ -149,6 +169,18 @@ class TesteDeduplicar(unittest.TestCase):
     def test_linhas_diferentes_nao_somem(self):
         linhas = [{"AnoMes": 202201}, {"AnoMes": 202202}]
         self.assertEqual(len(coletar.deduplicar(linhas)), 2)
+
+    def test_chave_unica_mantem_a_ultima_versao(self):
+        # a Olinda devolve, numa unica consulta, todos os meses a partir do
+        # pedido — entao o mesmo mes pode vir com valores diferentes em
+        # consultas diferentes (meses recentes ainda sendo atualizados)
+        linhas = [
+            {"AnoMes": 202502, "QtdeUsuarios": "93750"},
+            {"AnoMes": 202502, "QtdeUsuarios": "93751"},
+        ]
+        resultado = coletar.deduplicar(linhas, colunas_chave=("AnoMes",))
+        self.assertEqual(len(resultado), 1)
+        self.assertEqual(resultado[0]["QtdeUsuarios"], "93751")
 
 
 class TesteColetarTabelaPontaAPonta(unittest.TestCase):
