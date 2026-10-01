@@ -30,7 +30,7 @@ São três perguntas encadeadas:
 ## Progresso
 
 - [x] **0.** Repositório e pergunta
-- [ ] **1.** Coletor de dados da API
+- [x] **1.** Coletor de dados da API
 - [ ] **2.** Primeiro contato com os dados
 - [ ] **3.** Validação da base
 - [ ] **4.** Primeiro gráfico
