@@ -32,7 +32,7 @@ São três perguntas encadeadas:
 - [x] **0.** Repositório e pergunta
 - [x] **1.** Coletor de dados da API
 - [x] **2.** Primeiro contato com os dados
-- [ ] **3.** Validação da base
+- [x] **3.** Validação da base
 - [ ] **4.** Primeiro gráfico
 - [ ] **5.** Volume de contestações
 - [ ] **6.** Contexto regulatório
