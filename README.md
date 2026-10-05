@@ -35,7 +35,7 @@ São três perguntas encadeadas:
 - [x] **3.** Validação da base
 - [x] **4.** Primeiro gráfico
 - [x] **5.** Volume de contestações
-- [ ] **6.** Contexto regulatório
+- [x] **6.** Contexto regulatório
 - [ ] **7.** Normalização pelo volume total de Pix
 - [ ] **8.** Decomposição dos motivos de não devolução
 - [ ] **9.** Comparação entre períodos
