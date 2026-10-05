@@ -33,7 +33,7 @@ São três perguntas encadeadas:
 - [x] **1.** Coletor de dados da API
 - [x] **2.** Primeiro contato com os dados
 - [x] **3.** Validação da base
-- [ ] **4.** Primeiro gráfico
+- [x] **4.** Primeiro gráfico
 - [ ] **5.** Volume de contestações
 - [ ] **6.** Contexto regulatório
 - [ ] **7.** Normalização pelo volume total de Pix
