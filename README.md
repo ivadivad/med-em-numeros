@@ -37,7 +37,7 @@ São três perguntas encadeadas:
 - [x] **5.** Volume de contestações
 - [x] **6.** Contexto regulatório
 - [ ] **7.** Normalização pelo volume total de Pix
-- [ ] **8.** Decomposição dos motivos de não devolução
+- [x] **8.** Decomposição dos motivos de não devolução
 - [ ] **9.** Comparação entre períodos
 - [ ] **10.** Padronização visual
 - [ ] **11.** Escrita final
