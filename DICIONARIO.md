@@ -41,13 +41,13 @@ Abertos do Banco Central.
 
 | Coluna | Tipo | Descrição |
 |---|---|---|
-| `ValorPixresidualnaodevolvido` | Decimal | Valor em reais que ficou contestado e aceito, mas não foi devolvido (nem integral nem parcialmente) — o que sobra depois das devoluções. **Checado e não bate** com `ValorPixcontestadosaceitos − (devolvido integral + parcial)`: a diferença chega a ~R$ 670 milhões em algum mês. Alguma outra coluna (talvez o bloqueio cautelar) também entra nessa conta — ver "perguntas em aberto". |
+| `ValorPixresidualnaodevolvido` | Decimal | Valor em reais que **não voltou dos casos devolvidos só em parte** — a diferença entre o contestado e o devolvido nesses casos. Não tem motivo associado. **Confirmado na etapa 8** (`notebooks/06-motivos-nao-devolucao.ipynb`) pela identidade abaixo, que fecha com erro R$ 0 nos 52 meses: `ValorPixcontestadosaceitos = devolvido integral + devolvido parcial + residual + saldo insuficiente + conta encerrada + motivos diversos`. |
 | `Quantidadedenaodevolvidossaldoinsuficiente` | Decimal | Quantidade de casos não devolvidos porque a conta de destino já não tinha saldo suficiente no momento do bloqueio — o motivo que mais pesa em valor, segundo análises anteriores deste mesmo projeto. |
 | `ValorPixnaodevolvidossaldoinsuficiente` | Decimal | Valor correspondente, em reais. |
 | `Quantidadedenaodevolvidoscontaencerrada` | Decimal | Quantidade de casos não devolvidos porque a conta de destino já tinha sido encerrada antes do bloqueio. |
 | `Valornaodevolvidoscontaencerrada` | Decimal | Valor correspondente, em reais. |
 | `Quantidadedenaodevolvidosmotivosdiversos` | Decimal | Quantidade de casos não devolvidos por motivos que não se encaixam nas duas categorias acima (catch-all). Ver "perguntas em aberto" — o que exatamente cai aqui continua sem fonte oficial encontrada. |
-| `ValorPixnaodevolvidosmotivosdiversos` | Decimal | Valor correspondente, em reais. **Checado:** a soma dos três valores de motivo (`saldo insuficiente` + `conta encerrada` + `motivos diversos`) não bate com `ValorPixresidualnaodevolvido` — mesma divergência do item acima. |
+| `ValorPixnaodevolvidosmotivosdiversos` | Decimal | Valor correspondente, em reais. Os três valores de motivo (`saldo insuficiente` + `conta encerrada` + `motivos diversos`) somados são o valor dos casos em que **nada** voltou — não a decomposição do residual (ver identidade em `ValorPixresidualnaodevolvido`). |
 
 ## Bloqueio cautelar
 
@@ -72,12 +72,14 @@ sabendo o que ela não sabe.
   declara a unidade em lugar nenhum que eu tenha encontrado.
 - `Qtdecontestacoesaceitasacada100mil`: a cada 100 mil o quê? Transações Pix
   do mês? Chaves cadastradas? Não dá pra derivar só com esta tabela.
-- `ValorPixresidualnaodevolvido` não é explicado pelos três motivos somados
-  nem por `contestado − devolvido`. Falta pelo menos uma fonte de valor na
-  conta — bloqueio cautelar ainda não liberado, nem devolvido, é candidato.
-  **Continua aberto** — a etapa 3 confirmou a fórmula de `PercentualdeDevolucao`,
-  mas não essa outra conta; não investiguei mais a fundo por não ser o
-  objetivo da etapa.
+- ~~`ValorPixresidualnaodevolvido` não é explicado pelos três motivos somados
+  nem por `contestado − devolvido`.~~ **Resolvido na etapa 8:** não faltava
+  fonte de valor nenhuma — os dois são destinos diferentes do valor aceito.
+  `aceito = devolvido integral + parcial + residual + os três motivos`, erro
+  R$ 0 nos 52 meses. O palpite anterior (bloqueio cautelar) estava errado.
+- Por que "conta encerrada" caiu de 13,5–28,7% do valor sem devolução em
+  jan–jul/2022 para no máximo 5,6% a partir de ago/2022? Quebra nítida, causa
+  não pesquisada (etapa 8).
 - ~~Devolução parcial entra no numerador do percentual pelo valor devolvido ou
   pela quantidade de casos?~~ **Resolvido na etapa 3:** pelo valor — ver
   fórmula confirmada acima, em "Devoluções".
