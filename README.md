@@ -43,7 +43,8 @@ São três perguntas encadeadas:
 - [ ] **11.** Escrita final
 - [ ] **12.** Atualização automática mensal
 
-O detalhamento de cada etapa está em [`PLANO.md`](PLANO.md).
+Cada etapa tem seu notebook em [`notebooks/`](notebooks/), e o significado de
+cada coluna da base está em [`DICIONARIO.md`](DICIONARIO.md).
 
 ---
 
@@ -67,7 +68,8 @@ tempo para descobrir. Ficam registradas aqui para quem for usar:
 | As entidades exigem parâmetro | Chamar `EstatisticasFraudesPix` direto devolve `400 The URI is malformed`. A sintaxe correta é `Entidade(Param=@Param)?@Param='AAAAMM'` |
 | O nome do parâmetro varia | `TransacoesPixPorMunicipio` usa `DataBase`, com B maiúsculo. As demais usam `Database` |
 | O JSON vem embrulhado | A resposta vem entre `/*` e `*/`, o que quebra `json.loads` direto |
-| O parâmetro nem sempre filtra | Alguns endpoints devolvem meses diferentes do solicitado. A referência confiável é o campo `AnoMes` de dentro da linha, nunca o valor enviado |
+| O parâmetro não filtra o mês | `@Database='202301'` devolve todos os meses **a partir de** jan/2023, não só ele. Pra um mês só, é preciso acrescentar `$filter=AnoMes eq 202301`. A referência confiável é sempre o campo `AnoMes` de dentro da linha |
+| `$apply` é ignorado | Agregação no servidor (`groupby`, `aggregate`) não funciona: a resposta vem crua. A tabela `EstatisticasTransacoesPix` tem centenas de MB — o coletor soma por mês localmente e grava só o total |
 | As entidades com `_` não funcionam | `_EstatisticasFraudesPix` e similares aparecem no catálogo mas retornam 500 |
 | A defasagem é maior que a documentada | A documentação indica publicação 30 dias após o fim do mês; na prática o atraso observado é de cerca de quatro meses |
 
@@ -77,15 +79,15 @@ tempo para descobrir. Ficam registradas aqui para quem for usar:
 
 ```
 .
-├── coletar.py                 # coleta da API, com varredura mês a mês
+├── coletar.py                 # coleta da API, mês a mês, mesclando com o que já existe
 ├── teste_coletar.py           # testes do coletor
+├── DICIONARIO.md              # o que significa cada coluna, e o que ainda não se sabe
 ├── dados/
-│   ├── fraude.csv             # consolidado, sem duplicatas
-│   ├── fraude_cobertura.csv   # quais meses existem e quantas linhas cada um tem
+│   ├── fraude.csv             # consolidado, uma linha por mês
+│   ├── fraude_cobertura.csv   # o que a última coleta encontrou em cada mês
 │   └── snapshots/             # retrato datado de cada coleta, nunca sobrescrito
 ├── notebooks/                 # análise, um notebook por etapa
-├── graficos/                  # PNGs finais
-└── PLANO.md                   # o roteiro do projeto
+└── graficos/                  # PNGs gerados pelos notebooks
 ```
 
 Os **snapshots** existem de propósito. Estatística oficial é revisada, e guardar
