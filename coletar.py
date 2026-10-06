@@ -30,13 +30,20 @@ DESDE_PADRAO = {
     "cnae": 202011,
 }
 
-# coluna(s) que identificam uma linha de forma unica, por tabela — usado na
-# deduplicacao. A Olinda devolve, numa unica consulta, todos os meses a
-# partir do parametro pedido (nao so aquele mes); por isso o mesmo mes pode
-# vir embutido em mais de uma consulta do sweep, e em meses recentes (ainda
-# sendo atualizados pelo BCB) os valores podem divergir entre uma consulta e
-# outra feitas na mesma coleta. Tabelas sem entrada aqui caem no fallback:
-# deduplicar pelo conteudo inteiro da linha.
+# tabelas grandes demais pra versionar linha a linha: o coletor soma estas
+# colunas por mes e grava so o total. EstatisticasTransacoesPix tem dezenas
+# de milhares de linhas por mes (uma por combinacao de PF/PJ, regiao, idade,
+# forma de iniciacao, natureza e finalidade) — centenas de MB no total.
+AGREGAR = {
+    "transacoes": ("VALOR", "QUANTIDADE"),
+}
+
+# coluna(s) que identificam uma linha de forma unica, por tabela — usado ao
+# mesclar a coleta nova com o consolidado ja existente: na colisao, fica a
+# versao mais recente (meses recentes sao revisados pelo BCB). Tabelas sem
+# entrada aqui caem no fallback: deduplicar pelo conteudo inteiro da linha.
+# "transacoes" so pode usar AnoMes porque ja chega agregada (ver AGREGAR);
+# a tabela crua tem varias linhas por mes.
 CHAVE_UNICA = {
     "fraude": ("AnoMes",),
     "transacoes": ("AnoMes",),
@@ -46,7 +53,7 @@ TENTATIVAS = 3
 ESPERA_BASE = 1  # segundos; cresce a cada nova tentativa
 
 
-def requisitar(url, timeout=30):
+def requisitar(url, timeout=120):
     """Faz um GET e devolve (status, corpo). Nunca levanta excecao."""
     try:
         with urllib.request.urlopen(url, timeout=timeout) as resposta:
@@ -79,10 +86,15 @@ def desembrulhar(corpo):
 
 
 def montar_url(entidade, parametro, valor):
-    """Monta a URL no formato exigido pela Olinda: Entidade(Param=@Param)."""
+    """Monta a URL no formato exigido pela Olinda: Entidade(Param=@Param).
+
+    O parametro sozinho devolve todos os meses a partir de `valor`, nao so
+    ele; o $filter restringe ao mes exato. Sem isso, varrer mes a mes baixa a
+    tabela inteira de novo a cada mes.
+    """
     return (
         f"{BASE}/{entidade}({parametro}=@{parametro})"
-        f"?@{parametro}='{valor}'&$format=json"
+        f"?@{parametro}='{valor}'&$filter=AnoMes%20eq%20{valor}&$format=json"
     )
 
 
@@ -178,16 +190,64 @@ def deduplicar(linhas, colunas_chave=None):
     return list(vistas.values())
 
 
+def agregar_por_mes(linhas, colunas_soma):
+    """Soma `colunas_soma` por AnoMes. Uma linha por mes, mais `LinhasOrigem`.
+
+    `LinhasOrigem` conta quantas linhas cruas entraram em cada total — se
+    muitos meses derem o mesmo numero redondo, a API provavelmente cortou a
+    resposta.
+    """
+    totais = {}
+    for linha in linhas:
+        mes = int(linha["AnoMes"])
+        total = totais.setdefault(mes, {"AnoMes": mes, **{c: 0 for c in colunas_soma}, "LinhasOrigem": 0})
+        for coluna in colunas_soma:
+            total[coluna] += linha.get(coluna) or 0
+        total["LinhasOrigem"] += 1
+
+    for total in totais.values():
+        for coluna in colunas_soma:
+            if isinstance(total[coluna], float):
+                total[coluna] = round(total[coluna], 2)
+    return list(totais.values())
+
+
 def coletar_tabela(tabela, desde=None):
-    """Varre todos os meses de uma tabela. Devolve (linhas, cobertura)."""
+    """Varre todos os meses de uma tabela. Devolve (linhas, cobertura).
+
+    Tabelas em AGREGAR sao somadas mes a mes, logo apos cada consulta, pra
+    nao manter milhoes de linhas cruas em memoria. A cobertura registra
+    sempre o numero de linhas cruas que a API devolveu.
+    """
     desde = desde or DESDE_PADRAO[tabela]
     linhas_totais = []
     cobertura = {}
     for mes in gerar_meses(desde):
         linhas, situacao = coletar_mes(tabela, mes)
         cobertura[mes] = (len(linhas), situacao)
+        if tabela in AGREGAR:
+            linhas = agregar_por_mes(linhas, AGREGAR[tabela])
         linhas_totais.extend(linhas)
     return deduplicar(linhas_totais, CHAVE_UNICA.get(tabela)), cobertura
+
+
+def ler_csv(caminho):
+    """Le um CSV consolidado ja existente. Arquivo ausente vira lista vazia."""
+    if not os.path.exists(caminho):
+        return []
+    with open(caminho, newline="", encoding="utf-8") as arquivo:
+        return list(csv.DictReader(arquivo))
+
+
+def consolidar(existentes, novas, colunas_chave=None):
+    """Mescla a coleta nova com o consolidado existente, ordenado por AnoMes.
+
+    Na colisao de chave, a linha nova vence (mes revisado pelo BCB). Meses
+    que so existem no consolidado sao mantidos — uma rodada em que a API
+    falhou num mes nao apaga o que ja tinha sido coletado antes.
+    """
+    linhas = deduplicar(existentes + novas, colunas_chave)
+    return sorted(linhas, key=lambda linha: int(linha.get("AnoMes") or 0))
 
 
 def gravar_csv(linhas, caminho):
@@ -242,13 +302,19 @@ def main(argv):
             print(f"{nome:12} {entidade} (@{parametro}, desde {DESDE_PADRAO[nome]})")
         return 0
 
-    linhas, cobertura = coletar_tabela(args.tabela, args.desde)
-    gravar_csv(linhas, f"dados/{args.tabela}.csv")
-    gravar_snapshot(linhas, args.tabela)
+    caminho = f"dados/{args.tabela}.csv"
+    novas, cobertura = coletar_tabela(args.tabela, args.desde)
+    consolidado = consolidar(ler_csv(caminho), novas, CHAVE_UNICA.get(args.tabela))
+
+    gravar_csv(consolidado, caminho)
+    gravar_snapshot(novas, args.tabela)
     gravar_cobertura(cobertura, f"dados/{args.tabela}_cobertura.csv")
 
     meses_ok = sum(1 for _, situacao in cobertura.values() if situacao == "ok")
-    print(f"{args.tabela}: {len(linhas)} linhas em {meses_ok}/{len(cobertura)} meses")
+    print(
+        f"{args.tabela}: {meses_ok}/{len(cobertura)} meses ok nesta coleta, "
+        f"{len(novas)} linhas novas, {len(consolidado)} linhas no consolidado"
+    )
     return 0
 
 

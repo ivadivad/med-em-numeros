@@ -79,6 +79,12 @@ class TesteMontarUrl(unittest.TestCase):
         self.assertIn("DataBase=@DataBase", url)
         self.assertIn("@DataBase='202201'", url)
 
+    def test_filtra_o_mes_exato(self):
+        # sem $filter, a Olinda devolve todos os meses a partir do pedido
+        url = coletar.montar_url("EstatisticasFraudesPix", "Database", 202201)
+        self.assertIn("$filter=AnoMes%20eq%20202201", url)
+        self.assertNotIn(" ", url)
+
 
 class TesteGerarMeses(unittest.TestCase):
     def test_virada_de_ano(self):
@@ -194,6 +200,67 @@ class TesteColetarTabelaPontaAPonta(unittest.TestCase):
         linhas2, _ = coletar.coletar_tabela("fraude")
         self.assertEqual(linhas1, linhas2)
         self.assertEqual(len(linhas1), 1)
+
+    @patch("coletar.coletar_mes")
+    @patch("coletar.gerar_meses")
+    def test_transacoes_chega_agregada(self, gerar_meses_mock, coletar_mes_mock):
+        # a tabela crua tem varias linhas por mes; dedup por AnoMes sem agregar
+        # antes jogaria todas fora menos uma
+        gerar_meses_mock.return_value = [202601]
+        coletar_mes_mock.return_value = (
+            [
+                {"AnoMes": 202601, "NATUREZA": "P2P", "VALOR": 100.5, "QUANTIDADE": 10},
+                {"AnoMes": 202601, "NATUREZA": "P2B", "VALOR": 200.25, "QUANTIDADE": 20},
+                {"AnoMes": 202601, "NATUREZA": "B2P", "VALOR": 300.0, "QUANTIDADE": 30},
+            ],
+            "ok",
+        )
+
+        linhas, cobertura = coletar.coletar_tabela("transacoes")
+        self.assertEqual(linhas, [{"AnoMes": 202601, "VALOR": 600.75, "QUANTIDADE": 60, "LinhasOrigem": 3}])
+        self.assertEqual(cobertura[202601], (3, "ok"))
+
+
+class TesteAgregarPorMes(unittest.TestCase):
+    def test_soma_por_mes(self):
+        linhas = [
+            {"AnoMes": 202601, "VALOR": 1.1, "QUANTIDADE": 1},
+            {"AnoMes": 202602, "VALOR": 5.0, "QUANTIDADE": 5},
+            {"AnoMes": 202601, "VALOR": 2.2, "QUANTIDADE": 2},
+        ]
+        resultado = {l["AnoMes"]: l for l in coletar.agregar_por_mes(linhas, ("VALOR", "QUANTIDADE"))}
+        self.assertEqual(resultado[202601]["VALOR"], 3.3)
+        self.assertEqual(resultado[202601]["QUANTIDADE"], 3)
+        self.assertEqual(resultado[202601]["LinhasOrigem"], 2)
+        self.assertEqual(resultado[202602]["LinhasOrigem"], 1)
+
+
+class TesteConsolidar(unittest.TestCase):
+    def test_nova_coleta_vence_e_arquivo_nao_se_perde(self):
+        # existentes vem do CSV (texto), novas vem da API (numero)
+        existentes = [
+            {"AnoMes": "202601", "Qtde": "100"},
+            {"AnoMes": "202602", "Qtde": "200"},
+        ]
+        novas = [{"AnoMes": 202602, "Qtde": 205}]
+        resultado = coletar.consolidar(existentes, novas, ("AnoMes",))
+
+        self.assertEqual(len(resultado), 2)
+        self.assertEqual(resultado[0]["Qtde"], "100")  # mes que a API nao trouxe continua
+        self.assertEqual(resultado[1]["Qtde"], 205)  # mes revisado: versao nova
+
+    def test_ordena_por_mes(self):
+        existentes = [{"AnoMes": "202603"}, {"AnoMes": "202601"}]
+        novas = [{"AnoMes": 202602}]
+        resultado = coletar.consolidar(existentes, novas, ("AnoMes",))
+        self.assertEqual([int(l["AnoMes"]) for l in resultado], [202601, 202602, 202603])
+
+    def test_rodada_que_falhou_nao_apaga_nada(self):
+        existentes = [{"AnoMes": "202601", "Qtde": "100"}]
+        self.assertEqual(coletar.consolidar(existentes, [], ("AnoMes",)), existentes)
+
+    def test_ler_csv_ausente(self):
+        self.assertEqual(coletar.ler_csv(os.path.join(tempfile.gettempdir(), "nao-existe-xyz.csv")), [])
 
 
 class TesteGravacao(unittest.TestCase):
