@@ -63,6 +63,57 @@ class TesteGrafico(unittest.TestCase):
         self.assertGreater(fig2._espaco_reservado[0], fig1._espaco_reservado[0])
 
 
+class TesteFormatoBrasileiro(unittest.TestCase):
+    def tearDown(self):
+        plt.close("all")
+
+    def test_numero_br(self):
+        self.assertEqual(visual.numero_br(17.5), "17,5")
+        self.assertEqual(visual.numero_br(1750), "1.750")
+        self.assertEqual(visual.numero_br(2.25), "2,25")
+        self.assertEqual(visual.numero_br(0), "0")
+
+    def test_mes_br(self):
+        import datetime
+        self.assertEqual(visual.mes_br(matplotlib.dates.date2num(datetime.date(2025, 10, 1))), "out/25")
+
+    def test_eixo_milhoes(self):
+        _, ax = visual.grafico("Titulo")
+        visual.eixo_milhoes(ax)
+        formato = ax.yaxis.get_major_formatter()
+        self.assertEqual(formato(3_500_000, 0), "3,5 mi")
+        self.assertEqual(formato(0, 0), "0")
+
+    def test_salvar_traduz_datas_e_numeros(self):
+        import datetime
+        fig, ax = visual.grafico("Titulo")
+        ax.plot([datetime.date(2025, 1, 1), datetime.date(2025, 6, 1)], [1.5, 2.5])
+        pasta = tempfile.mkdtemp()
+        try:
+            original = os.getcwd()
+            os.chdir(pasta)
+            visual.salvar(fig, "teste.png")
+        finally:
+            os.chdir(original)
+            shutil.rmtree(pasta)
+        self.assertEqual(ax.xaxis.get_major_formatter()(matplotlib.dates.date2num(datetime.date(2025, 3, 1))), "mar/25")
+        self.assertEqual(ax.yaxis.get_major_formatter()(1.5), "1,5")
+
+    def test_salvar_nao_desfaz_eixo_ja_formatado(self):
+        fig, ax = visual.grafico("Titulo")
+        ax.plot([0, 1], [0, 3_000_000])
+        visual.eixo_milhoes(ax)
+        pasta = tempfile.mkdtemp()
+        try:
+            original = os.getcwd()
+            os.chdir(pasta)
+            visual.salvar(fig, "teste.png")
+        finally:
+            os.chdir(original)
+            shutil.rmtree(pasta)
+        self.assertEqual(ax.yaxis.get_major_formatter()(3_000_000, 0), "3 mi")
+
+
 class TesteSalvar(unittest.TestCase):
     def setUp(self):
         self.original = os.getcwd()

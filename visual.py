@@ -10,7 +10,9 @@ Trocar uma linha aqui muda todos os graficos do projeto.
 """
 import os
 
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 
 # paleta categorica em ordem fixa — atribuir nessa ordem, nunca reciclar
 AZUL = "#2a78d6"
@@ -31,6 +33,8 @@ FONTE_FRAUDE_E_TRANSACOES = (
     "Fonte: Banco Central do Brasil, Dados Abertos do Pix "
     "(EstatisticasFraudesPix e EstatisticasTransacoesPix)."
 )
+
+MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 
 # espacos em polegadas, pra nao depender da altura da figura
 _MARGEM = 0.15
@@ -77,6 +81,36 @@ def grafico(titulo, subtitulo=None, fonte=FONTE_FRAUDE, linhas=1, figsize=None):
     return fig, (eixos if linhas == 1 else lista)
 
 
+def numero_br(valor, _posicao=None):
+    """17.5 -> '17,5'; 1750 -> '1.750'. Formato de numero dos eixos."""
+    texto = f"{valor:,.2f}".rstrip("0").rstrip(".")
+    return texto.replace(",", "_").replace(".", ",").replace("_", ".")
+
+
+def mes_br(valor, _posicao=None):
+    """Data do eixo (numero de dias do matplotlib) -> 'jan/22'."""
+    data = mdates.num2date(valor)
+    return f"{MESES[data.month - 1]}/{data:%y}"
+
+
+def eixo_milhoes(ax):
+    """Eixo Y em milhoes ('3,5 mi'), no lugar do '1e6' que o matplotlib poe no
+    canto quando os valores sao grandes."""
+    ax.yaxis.set_major_formatter(
+        mticker.FuncFormatter(lambda v, _p: f"{numero_br(v / 1e6)} mi" if v else "0")
+    )
+
+
+def _formatar_eixos(fig):
+    """Datas em portugues no X e numeros com virgula decimal no Y, sem mexer em
+    eixo que o notebook ja formatou por conta propria (ex: eixo_milhoes)."""
+    for ax in fig.axes:
+        if isinstance(ax.xaxis.get_major_formatter(), (mdates.AutoDateFormatter, mdates.ConciseDateFormatter)):
+            ax.xaxis.set_major_formatter(mticker.FuncFormatter(mes_br))
+        if type(ax.yaxis.get_major_formatter()) is mticker.ScalarFormatter:
+            ax.yaxis.set_major_formatter(mticker.FuncFormatter(numero_br))
+
+
 def pasta_graficos():
     """../graficos dentro do repositorio; graficos/ quando o notebook roda fora
     dele (no Colab, a pasta de trabalho e /content e ../graficos nao existe)."""
@@ -84,8 +118,10 @@ def pasta_graficos():
 
 
 def salvar(fig, nome, dpi=150):
-    """Ajusta o layout reservando o espaco do cabecalho e do rodape e grava o
-    PNG em pasta_graficos(). Devolve o caminho gravado."""
+    """Formata os eixos (datas e numeros em portugues), ajusta o layout
+    reservando o espaco do cabecalho e do rodape e grava o PNG em
+    pasta_graficos(). Devolve o caminho gravado."""
+    _formatar_eixos(fig)
     topo, rodape = getattr(fig, "_espaco_reservado", (0, 0))
     altura = fig.get_figheight()
     fig.tight_layout(rect=[0, rodape / altura, 1, 1 - topo / altura])
