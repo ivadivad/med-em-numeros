@@ -95,8 +95,20 @@ com o MED.
 - [ ] **11.** Escrita final
 - [ ] **12.** Atualização automática mensal
 
-Cada etapa tem seu notebook em [`notebooks/`](notebooks/), e o significado de
-cada coluna da base está em [`DICIONARIO.md`](DICIONARIO.md).
+## Os notebooks
+
+Cada um lê os dados direto deste repositório e roda no Colab sem upload. O
+significado de cada coluna da base está em [`DICIONARIO.md`](DICIONARIO.md).
+
+| Notebook | Etapa | O que faz | |
+|---|---|---|---|
+| [01 — Primeiro contato](notebooks/01-primeiro-contato.ipynb) | 2 | Carrega a base, tipos, lacunas e duplicatas | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ivadivad/med-em-numeros/blob/main/notebooks/01-primeiro-contato.ipynb) |
+| [02 — Validação](notebooks/02-validacao.ipynb) | 3 | Reconstrói a fórmula do percentual e bate com a imprensa | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ivadivad/med-em-numeros/blob/main/notebooks/02-validacao.ipynb) |
+| [03 — Série temporal](notebooks/03-primeiro-grafico.ipynb) | 4 e 5 | Devolução, volume de contestações e taxa de aceite | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ivadivad/med-em-numeros/blob/main/notebooks/03-primeiro-grafico.ipynb) |
+| [04 — Contexto regulatório](notebooks/04-contexto-regulatorio.ipynb) | 6 | Mudanças de regra, com fonte, sobre as séries | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ivadivad/med-em-numeros/blob/main/notebooks/04-contexto-regulatorio.ipynb) |
+| [05 — Normalização](notebooks/05-normalizacao.ipynb) | 7 | Fraude dividida pelo volume total de Pix | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ivadivad/med-em-numeros/blob/main/notebooks/05-normalizacao.ipynb) |
+| [06 — Motivos](notebooks/06-motivos-nao-devolucao.ipynb) | 8 | Por que o dinheiro não volta | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ivadivad/med-em-numeros/blob/main/notebooks/06-motivos-nao-devolucao.ipynb) |
+| [07 — Antes e depois](notebooks/07-antes-e-depois.ipynb) | 9 | Compara os períodos das mudanças de regra | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ivadivad/med-em-numeros/blob/main/notebooks/07-antes-e-depois.ipynb) |
 
 ---
 
