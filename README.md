@@ -114,9 +114,10 @@ Valem pra qualquer conclusão acima.
 
 ## O que ainda falta
 
-- **Atualização automática mensal (etapa 12).** Bloqueada do lado do BC:
-  desde ~06/10/2026, a API devolve erro 500 em toda consulta à tabela de
-  fraude que tenha dado pra devolver (a de transações funciona). Os 52 meses já
+- **Dados novos de fraude.** A atualização automática existe, mas desde
+  ~06/10/2026 a API do BC devolve erro 500 em toda consulta à tabela de fraude
+  que tenha dado pra devolver (com ou sem filtro, em JSON ou CSV; a de
+  transações funciona). Não há aviso público de manutenção. Os 52 meses já
   coletados estão íntegros.
 - **Mais meses depois do MED 2.0.** A alta da devolução em 2026 tem 4 meses de
   dado. São os próximos meses que confirmam ou derrubam a hipótese.
@@ -250,6 +251,27 @@ python teste_visual.py    # precisa de matplotlib (pip install -r requirements.t
 Os notebooks leem os CSVs e o `visual.py` direto da URL bruta deste
 repositório, então abrem e rodam no Colab sem precisar de upload. Fora do
 repositório, os PNGs vão pra uma pasta `graficos/` criada ao lado do notebook.
+
+---
+
+## Atualização automática
+
+Todo dia 5, um workflow do GitHub Actions
+([`atualizar.yml`](.github/workflows/atualizar.yml)) roda os testes do
+coletor, coleta as duas tabelas e commita em `dados/` o que mudou, junto com
+um snapshot datado da coleta. A tabela de transações é recoletada só nos
+últimos 12 meses (meses novos e revisões recentes); a de fraude, inteira.
+
+Se uma das tabelas falhar, a outra é commitada mesmo assim e o job termina
+vermelho na aba Actions — falha de coleta não passa em silêncio. Se nada
+mudou, não há commit.
+
+**O que se atualiza e o que não:** os CSVs, sim, e com eles qualquer notebook
+na próxima vez que rodar. Os números e gráficos deste README, não — são da
+coleta de outubro de 2026 e só mudam se alguém reexecutar os notebooks.
+
+Em 07/10/2026, a tabela de fraude da API do BC devolve erro 500 (ver "O que
+ainda falta"). Até ela voltar, a atualização traz só as transações.
 
 ---
 
