@@ -311,6 +311,23 @@ class TesteGravacao(unittest.TestCase):
         with open(caminho, encoding="utf-8") as arquivo:
             self.assertEqual(arquivo.read(), original)
 
+    def test_csv_e_cobertura_usam_lf(self):
+        # \r\n faria o git do Linux (GitHub Actions) ver o arquivo inteiro alterado
+        csv_ = os.path.join(self.pasta, "a.csv")
+        cob = os.path.join(self.pasta, "b.csv")
+        coletar.gravar_csv([{"AnoMes": 202601, "x": 1}, {"AnoMes": 202602, "x": 2}], csv_)
+        coletar.gravar_cobertura({202601: (1, "ok")}, cob)
+        for caminho in (csv_, cob):
+            with open(caminho, "rb") as arquivo:
+                conteudo = arquivo.read()
+            self.assertNotIn(b"\r\n", conteudo)
+            self.assertIn(b"\n", conteudo)
+
+    def test_snapshot_usa_lf(self):
+        caminho = coletar.gravar_snapshot([{"a": 1}, {"a": 2}], "fraude", pasta=self.pasta, hoje="2026-01-01")
+        with open(caminho, "rb") as arquivo:
+            self.assertNotIn(b"\r\n", arquivo.read())
+
     def test_coleta_vazia_nao_vira_snapshot(self):
         # senao o snapshot vazio de uma rodada que falhou bloqueia o do dia
         self.assertIsNone(coletar.gravar_snapshot([], "fraude", pasta=self.pasta, hoje="2026-01-01"))
@@ -324,6 +341,41 @@ class TesteGravacao(unittest.TestCase):
             linhas = arquivo.read().splitlines()
         self.assertEqual(linhas[0], "AnoMes,linhas,situacao")
         self.assertEqual(linhas[1], "202201,10,ok")
+
+
+class TesteMain(unittest.TestCase):
+    def setUp(self):
+        self.original = os.getcwd()
+        self.pasta = tempfile.mkdtemp()
+        os.chdir(self.pasta)
+
+    def tearDown(self):
+        os.chdir(self.original)
+        shutil.rmtree(self.pasta)
+
+    @patch("coletar.coletar_tabela")
+    def test_rodada_sem_nenhum_ok_nao_grava_e_sai_com_erro(self, coletar_tabela_mock):
+        # a API do BC deu 500 em todo mes com dado (out/2026): isso tem que
+        # aparecer como falha, e nao como 'mudanca' nos arquivos
+        coletar_tabela_mock.return_value = ([], {202601: (0, "erro_500"), 202610: (0, "vazio")})
+        self.assertEqual(coletar.main(["fraude"]), 1)
+        self.assertFalse(os.path.exists("dados"))
+
+    @patch("coletar.coletar_tabela")
+    def test_so_meses_vazios_nao_e_erro(self, coletar_tabela_mock):
+        coletar_tabela_mock.return_value = ([], {202610: (0, "vazio")})
+        self.assertEqual(coletar.main(["fraude"]), 0)
+        self.assertFalse(os.path.exists("dados"))
+
+    @patch("coletar.coletar_tabela")
+    def test_rodada_ok_grava_e_sai_sem_erro(self, coletar_tabela_mock):
+        coletar_tabela_mock.return_value = (
+            [{"AnoMes": 202601, "x": 1}],
+            {202601: (1, "ok"), 202602: (0, "erro_500")},
+        )
+        self.assertEqual(coletar.main(["fraude"]), 0)
+        self.assertTrue(os.path.exists(os.path.join("dados", "fraude.csv")))
+        self.assertTrue(os.path.exists(os.path.join("dados", "fraude_cobertura.csv")))
 
 
 if __name__ == "__main__":

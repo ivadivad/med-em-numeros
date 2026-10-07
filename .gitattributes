@@ -1,0 +1,5 @@
+# dados sempre com \n, em qualquer sistema: o coletor roda no Windows e no
+# Linux do GitHub Actions, e fim de linha diferente faria o git ver o arquivo
+# inteiro como alterado
+*.csv  text eol=lf
+*.json text eol=lf

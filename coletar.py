@@ -1,6 +1,9 @@
 """Coletor dos dados abertos de Pix do BCB (plataforma Olinda).
 
-Uso: python coletar.py <tabela>
+Uso: python coletar.py <tabela> [--desde AAAAMM]
+
+Sai com codigo 1 quando nenhum mes vem ok e algum deu erro — pra uma coleta
+que falhou inteira ficar visivel (ex: vermelho no GitHub Actions).
 """
 import argparse
 import csv
@@ -10,6 +13,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from collections import Counter
 from datetime import date
 
 BASE = "https://olinda.bcb.gov.br/olinda/servico/Pix_DadosAbertos/versao/v1/odata"
@@ -273,7 +277,9 @@ def gravar_csv(linhas, caminho):
 
     os.makedirs(os.path.dirname(caminho) or ".", exist_ok=True)
     with open(caminho, "w", newline="", encoding="utf-8") as arquivo:
-        escritor = csv.DictWriter(arquivo, fieldnames=colunas)
+        # \n em qualquer sistema: o padrao do csv e \r\n, e no Linux do GitHub
+        # Actions isso faria o git ver o arquivo inteiro como alterado
+        escritor = csv.DictWriter(arquivo, fieldnames=colunas, lineterminator="\n")
         escritor.writeheader()
         escritor.writerows(linhas)
 
@@ -293,7 +299,7 @@ def gravar_snapshot(linhas, tabela, pasta="dados/snapshots", hoje=None):
         return caminho
 
     os.makedirs(pasta, exist_ok=True)
-    with open(caminho, "w", encoding="utf-8") as arquivo:
+    with open(caminho, "w", newline="\n", encoding="utf-8") as arquivo:
         json.dump(linhas, arquivo, ensure_ascii=False, indent=2)
     return caminho
 
@@ -302,7 +308,7 @@ def gravar_cobertura(cobertura, caminho):
     """Grava quais meses existem, quantas linhas e a situacao de cada um."""
     os.makedirs(os.path.dirname(caminho) or ".", exist_ok=True)
     with open(caminho, "w", newline="", encoding="utf-8") as arquivo:
-        escritor = csv.writer(arquivo)
+        escritor = csv.writer(arquivo, lineterminator="\n")
         escritor.writerow(["AnoMes", "linhas", "situacao"])
         for mes, (qtde, situacao) in sorted(cobertura.items()):
             escritor.writerow([mes, qtde, situacao])
@@ -322,15 +328,23 @@ def main(argv):
 
     caminho = f"dados/{args.tabela}.csv"
     novas, cobertura = coletar_tabela(args.tabela, args.desde)
-    consolidado = consolidar(ler_csv(caminho), novas, CHAVE_UNICA.get(args.tabela))
+    situacoes = Counter(situacao for _, situacao in cobertura.values())
+    resumo = ", ".join(f"{qtde} {situacao}" for situacao, qtde in sorted(situacoes.items()))
 
+    if not situacoes["ok"]:
+        # nada novo: nao regrava nenhum arquivo, pra uma rodada que falhou
+        # inteira nao aparecer como mudanca no git
+        falhou = any(s.startswith("erro_") or s == "falha_rede" for s in situacoes)
+        print(f"{args.tabela}: nenhum mes ok nesta coleta ({resumo}); nada gravado")
+        return 1 if falhou else 0
+
+    consolidado = consolidar(ler_csv(caminho), novas, CHAVE_UNICA.get(args.tabela))
     gravar_csv(consolidado, caminho)
     gravar_snapshot(novas, args.tabela)
     gravar_cobertura(cobertura, f"dados/{args.tabela}_cobertura.csv")
 
-    meses_ok = sum(1 for _, situacao in cobertura.values() if situacao == "ok")
     print(
-        f"{args.tabela}: {meses_ok}/{len(cobertura)} meses ok nesta coleta, "
+        f"{args.tabela}: {situacoes['ok']}/{len(cobertura)} meses ok nesta coleta ({resumo}), "
         f"{len(novas)} linhas novas, {len(consolidado)} linhas no consolidado"
     )
     return 0
