@@ -36,9 +36,10 @@ Com os dados de jan/2022 a abr/2026:
    informa o valor dos pedidos rejeitados (73% deles, em quantidade), então
    sobre tudo o que foi contestado a proporção é menor.
 2. **Ficou parada por quatro anos e subiu em 2026.** Entre 6% e 9% ao ano de
-   2022 a 2025, e 14,5% em jan–abr/2026, quando entrou em vigor o MED 2.0, que
-   permite recuperar dinheiro já transferido pra outras contas — coincidência
-   no tempo clara, causa ainda não provada.
+   2022 a 2025, e 14,5% em jan–abr/2026 — entre a entrada facultativa
+   (nov/2025) e a obrigatória (fev/2026) do MED 2.0, que permite recuperar
+   dinheiro já transferido pra outras contas. Coincidência no tempo clara,
+   causa ainda não provada.
 3. **Quando não volta, quase sempre é porque a conta já foi esvaziada:** saldo
    insuficiente responde por 86% do valor dos casos em que nada foi devolvido.
 
@@ -148,6 +149,8 @@ Valem pra qualquer conclusão acima.
 - [x] **10.** Padronização visual
 - [ ] **11.** Escrita final
 - [ ] **12.** Atualização automática mensal
+
+---
 
 ## Os notebooks
 
