@@ -1,0 +1,58 @@
+name: atualizar dados do Pix
+
+on:
+  schedule:
+    - cron: "0 9 5 * *"  # dia 5 de cada mês, 9h UTC (6h em Brasília)
+  workflow_dispatch:      # botão manual na aba Actions
+
+permissions:
+  contents: write  # sem isso o push do commit de dados falha
+
+jobs:
+  coletar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # o coletor e os testes dele usam só a biblioteca padrão
+      - name: Testes do coletor
+        run: python teste_coletar.py
+
+      # continue-on-error: uma tabela falhando não impede a outra de ser
+      # coletada e commitada. O último passo faz o job ficar vermelho.
+      - name: Coletar fraude
+        id: fraude
+        continue-on-error: true
+        run: python coletar.py fraude
+
+      # só os últimos 12 meses: pega meses novos e revisões recentes sem
+      # baixar a tabela inteira (centenas de MB) todo mês
+      - name: Coletar transações (últimos 12 meses)
+        id: transacoes
+        continue-on-error: true
+        run: python coletar.py transacoes --desde "$(date -u -d '12 months ago' +%Y%m)"
+
+      - name: Commit do que mudou
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dados/
+          if git diff --staged --quiet; then
+            echo "nada novo neste mês"
+          else
+            git commit -m "data: coleta automática de $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: Falhar se alguma tabela não foi coletada
+        if: steps.fraude.outcome == 'failure' || steps.transacoes.outcome == 'failure'
+        run: |
+          echo "fraude: ${{ steps.fraude.outcome }} | transações: ${{ steps.transacoes.outcome }}"
+          echo "O resumo de cada coleta está no passo dela, acima."
+          echo "erro_500 é falha do lado do BC; falha_rede é conexão."
+          exit 1
