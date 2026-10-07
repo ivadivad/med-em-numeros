@@ -147,7 +147,7 @@ Valem pra qualquer conclusão acima.
 - [x] **8.** Decomposição dos motivos de não devolução
 - [x] **9.** Comparação entre períodos
 - [x] **10.** Padronização visual
-- [ ] **11.** Escrita final
+- [x] **11.** Escrita final
 - [ ] **12.** Atualização automática mensal
 
 ---
