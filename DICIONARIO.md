@@ -26,7 +26,7 @@ Abertos do Banco Central: [`fraude.csv`](#dadosfraudecsv) (tabela
 | `QtdePixcontestados` | Decimal | Quantidade de transações Pix contestadas no mês — o usuário alega ter sido vítima de golpe e pede abertura do MED. **Confirmado nos dados:** é exatamente a soma de `Qtdecontestacoesaceitas` + `Qtdecontestacoesrejeitadas` nos 52 meses, sem exceção. |
 | `Qtdecontestacoesaceitas` | Decimal | Quantidade de contestações aceitas pela instituição do recebedor — ela reconhece indício de fraude e segue com o processo do MED. |
 | `Qtdecontestacoesrejeitadas` | Decimal | Quantidade de contestações negadas pela instituição do recebedor. |
-| `Qtdecontestacoesaceitasacada100mil` | Decimal | Taxa de contestações aceitas a cada 100 mil — provavelmente transações Pix do mês, mas a API não declara o denominador e não achei como derivá-lo só com esta tabela. Ver "perguntas em aberto". |
+| `Qtdecontestacoesaceitasacada100mil` | Decimal | Contestações aceitas a cada 100 mil transações Pix do mês. **Confirmado na revisão de 07/10:** é exatamente `Qtdecontestacoesaceitas / QUANTIDADE × 100.000`, com `QUANTIDADE` de `dados/transacoes.csv` — erro máximo de 0,0005 nos 52 meses (arredondamento). Ou seja, o próprio BC usa como denominador a mesma tabela de transações coletada na etapa 7 (só Pix liquidado no SPI). |
 | `QtdeUsuarioscommarcacoesdefraude` | Decimal | Quantidade de usuários (CPF/CNPJ) com pelo menos uma marcação de fraude no mês. |
 | `QtdeChavesPixcommarcacoesdefraude` | Decimal | Quantidade de chaves Pix (CPF, e-mail, telefone, celular, aleatória) associadas a alguma marcação de fraude no mês. Em todos os meses é um pouco maior que `QtdeUsuarioscommarcacoesdefraude`, o que faz sentido: uma pessoa pode ter mais de uma chave. |
 | `ValorPixcontestadosaceitos` | Decimal | Soma em reais do valor das transações cuja contestação foi aceita no mês. Varia de ~R$ 123 milhões a ~R$ 860 milhões por mês no período coletado. |
@@ -99,8 +99,9 @@ sabendo o que ela não sabe.
 - Valor está em reais? A magnitude (centenas de milhões a bilhões por mês)
   é compatível com reais para o volume de Pix do Brasil, mas a API não
   declara a unidade em lugar nenhum que eu tenha encontrado.
-- `Qtdecontestacoesaceitasacada100mil`: a cada 100 mil o quê? Transações Pix
-  do mês? Chaves cadastradas? Não dá pra derivar só com esta tabela.
+- ~~`Qtdecontestacoesaceitasacada100mil`: a cada 100 mil o quê?~~
+  **Resolvido com a tabela de transações (etapa 7):** transações Pix do mês,
+  liquidadas no SPI. Bate até o arredondamento.
 - ~~`ValorPixresidualnaodevolvido` não é explicado pelos três motivos somados
   nem por `contestado − devolvido`.~~ **Resolvido na etapa 8:** não faltava
   fonte de valor nenhuma — os dois são destinos diferentes do valor aceito.
