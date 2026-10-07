@@ -111,6 +111,28 @@ Valem pra qualquer conclusão acima.
 
 ---
 
+## O que ainda falta
+
+- **Atualização automática mensal (etapa 12).** Bloqueada do lado do BC:
+  desde ~06/10/2026, a API devolve erro 500 em toda consulta à tabela de
+  fraude que tenha dado pra devolver (a de transações funciona). Os 52 meses já
+  coletados estão íntegros.
+- **Mais meses depois do MED 2.0.** A alta da devolução em 2026 tem 4 meses de
+  dado. São os próximos meses que confirmam ou derrubam a hipótese.
+- **Perguntas sem resposta**, registradas no [`DICIONARIO.md`](DICIONARIO.md):
+  o que entra em "motivos diversos" (~10% do valor sem devolução); por que
+  "conta encerrada" despencou em ago/2022; por que as contagens de pedidos de
+  uma reportagem da CNN não batem com a base; e se os valores estão em reais
+  (a magnitude indica que sim, mas a API não declara).
+- **Comparar os snapshots.** O coletor guarda o que a API respondeu em cada
+  data justamente pra detectar revisões retroativas do BC — a comparação ainda
+  não foi feita.
+- **Duas tabelas não exploradas:** `TransacoesPixPorMunicipio` e
+  `CnaePorteRecebedor` (Pix por setor econômico e porte de empresa). O coletor
+  já sabe buscá-las; o `$filter` nelas não foi testado.
+
+---
+
 ## Progresso
 
 - [x] **0.** Repositório e pergunta
