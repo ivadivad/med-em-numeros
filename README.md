@@ -79,6 +79,38 @@ com o MED.
 
 ---
 
+## Limitações
+
+Valem pra qualquer conclusão acima.
+
+- **A fraude é validada por quem está sendo contestado.** Quem julga a
+  contestação é a própria instituição que recebeu o dinheiro, e 73% dos pedidos
+  do período foram rejeitados. "Fraude", nesta base, é fraude que a instituição
+  reconheceu.
+- **Só o que foi aceito tem valor em reais.** A base não informa quanto valiam
+  os pedidos rejeitados — por isso os 9% são proporção do valor aceito, não de
+  tudo o que foi contestado.
+- **Golpe não contestado não aparece.** Vítima que não aciona o MED não entra
+  em nenhuma das medidas.
+- **Não há recorte por instituição nem por município.** É um agregado nacional
+  mensal: não dá pra comparar bancos.
+- **A série começa em jan/2022.** O MED existe desde nov/2021; os primeiros
+  meses dele não estão na tabela.
+- **O denominador de transações é parcial.** Exclui Pix entre contas da mesma
+  instituição (~11% das transações): as taxas por milhão de transações ficam
+  um pouco acima do real; as tendências, não.
+- **Os meses recentes ainda mudam.** O BC revisa números já publicados, e a
+  tabela de fraude sai com cinco meses ou mais de atraso — os meses mais
+  recentes, que são justamente os posteriores às mudanças de regra, são os
+  menos firmes.
+- **Pouca amostra depois das regras, e antes e depois não é causa.** Os
+  períodos do botão digital e do MED 2.0 têm de 2 a 3 meses cada, as regras se
+  sobrepõem, e não há grupo de controle — o país inteiro mudou ao mesmo tempo.
+- **Bloqueio cautelar e MED podem se sobrepor.** A base não diz se um Pix
+  bloqueado cautelarmente também aparece nas contestações.
+
+---
+
 ## Progresso
 
 - [x] **0.** Repositório e pergunta
@@ -140,7 +172,7 @@ tempo para descobrir. Ficam registradas aqui para quem for usar:
 | O parâmetro não filtra o mês | `@Database='202301'` devolve todos os meses **a partir de** jan/2023, não só ele. Pra um mês só, é preciso acrescentar `$filter=AnoMes eq 202301`. A referência confiável é sempre o campo `AnoMes` de dentro da linha |
 | `$apply` é ignorado | Agregação no servidor (`groupby`, `aggregate`) não funciona: a resposta vem crua. A tabela `EstatisticasTransacoesPix` tem centenas de MB — o coletor soma por mês localmente e grava só o total |
 | As entidades com `_` não funcionam | `_EstatisticasFraudesPix` e similares aparecem no catálogo mas retornam 500 |
-| A defasagem é maior que a documentada | A documentação indica publicação 30 dias após o fim do mês; na prática o atraso observado é de cerca de quatro meses |
+| A defasagem é maior que a documentada | A documentação indica publicação 30 dias após o fim do mês. Na tabela de fraude, em 01/10/2026 o último mês publicado era abr/2026 — cinco meses de atraso. A de transações estava em set/2026 |
 
 ---
 
@@ -193,25 +225,6 @@ python teste_visual.py    # precisa de matplotlib (pip install -r requirements.t
 Os notebooks leem os CSVs e o `visual.py` direto da URL bruta deste
 repositório, então abrem e rodam no Colab sem precisar de upload. Fora do
 repositório, os PNGs vão pra uma pasta `graficos/` criada ao lado do notebook.
-
----
-
-## Limitações conhecidas
-
-Estas ressalvas valem para qualquer conclusão tirada aqui:
-
-- **A fraude é validada por quem está sendo contestado.** Quem julga a
-  contestação é a própria instituição financeira envolvida, e mais da metade dos
-  pedidos é descartada. "Fraude" nesta base significa fraude que a instituição
-  reconheceu.
-- **O denominador real é desconhecido.** Golpes não contestados, e vítimas que
-  não registram ocorrência, não aparecem em lugar nenhum.
-- **Não há recorte por instituição nem por município.** A tabela de fraude é
-  agregada para o país inteiro, mês a mês. Não dá para comparar bancos.
-- **A série começa em 2022.** Fraudes anteriores à criação do MED não estão
-  representadas.
-- **Antes e depois não é inferência causal.** Comparações entre períodos aqui
-  descrevem o que mudou, não provam por que mudou.
 
 ---
 
