@@ -57,10 +57,10 @@ Abertos do Banco Central: [`fraude.csv`](#dadosfraudecsv) (tabela
 
 | Coluna | Tipo | Descrição |
 |---|---|---|
-| `QtdePixbloqueadoscautelarmenteeliberados` | Decimal | Quantidade de Pix bloqueados cautelarmente (por suspeita de fraude, antes de qualquer contestação formal) e depois liberados — a leitura mais provável é que a apuração não confirmou fraude e o valor seguiu seu curso normal, não necessariamente para a vítima. Não confirmado em documentação oficial. |
+| `QtdePixbloqueadoscautelarmenteeliberados` | Decimal | Quantidade de Pix bloqueados cautelarmente e depois **liberados pra conta de destino**. Bloqueio cautelar é uma retenção preventiva de até 72 horas, decidida pelo banco de quem recebeu o Pix, sem depender de a vítima contestar; "se estiver tudo certo, o valor é liberado na conta de destino" ([BB](https://blog.bb.com.br/bloqueio-cautelar-pix/), confirmado na etapa 11). |
 | `ValorPixbloqueadoscautelarmenteeliberados` | Decimal | Valor correspondente, em reais. É a coluna de maior variação da tabela: de ~R$ 18 milhões a ~R$ 5,5 bilhões num único mês. |
-| `QtdePixbloqueadoscautelarmenteedevolvidos` | Decimal | Quantidade de Pix bloqueados cautelarmente e devolvidos — aqui a apuração aparentemente confirmou a fraude e o valor retornou à vítima. Mesma ressalva: leitura pelo nome da coluna, não por documentação oficial. |
-| `ValorPixbloqueadoscautelarmenteedevolvidos` | Decimal | Valor correspondente, em reais. |
+| `QtdePixbloqueadoscautelarmenteedevolvidos` | Decimal | Quantidade de Pix bloqueados cautelarmente e **devolvidos à conta de origem** — "se houver indício de fraude, o dinheiro retorna para a conta de origem" (mesma fonte). É um canal de devolução separado do MED: não entra em `PercentualdeDevolucao`. A base não diz se um mesmo Pix pode aparecer aqui e nas contestações. |
+| `ValorPixbloqueadoscautelarmenteedevolvidos` | Decimal | Valor correspondente, em reais. No período coletado soma R$ 3,08 bi — mais que os R$ 2,21 bi devolvidos pelo MED. |
 
 ---
 
@@ -114,5 +114,13 @@ sabendo o que ela não sabe.
   pela quantidade de casos?~~ **Resolvido na etapa 3:** pelo valor — ver
   fórmula confirmada acima, em "Devoluções".
 - O que exatamente cai em "motivos diversos"?
-- Bloqueio cautelar "liberado" volta pro remetente, fica com quem recebeu, ou
-  é outra coisa? A documentação da Olinda não detalha o fluxo.
+- ~~Bloqueio cautelar "liberado" volta pro remetente, fica com quem recebeu, ou
+  é outra coisa?~~ **Resolvido na etapa 11:** liberado vai pra conta de
+  destino; devolvido volta pra conta de origem (fonte na tabela acima).
+- Um Pix bloqueado cautelarmente e devolvido pode também aparecer nas
+  contestações do MED? Se puder, somar os dois canais conta duas vezes.
+- Por que as contagens de uma reportagem da CNN (10/09/2024) não batem com a
+  base? Ela cita ~2,5 milhões de pedidos e 68% rejeitados em jan–jul/2024; a
+  base dá 5,96 milhões de Pix contestados e 57% rejeitados. O percentual de
+  valor bate (etapa 3); "pedido" e "Pix contestado" talvez não sejam a mesma
+  unidade.
