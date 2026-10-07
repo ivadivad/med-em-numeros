@@ -27,6 +27,51 @@ São três perguntas encadeadas:
 
 ---
 
+## A resposta
+
+Com os dados de jan/2022 a abr/2026:
+
+1. **Cerca de 9%.** De R$ 24,5 bilhões em contestações aceitas como fraude,
+   R$ 2,2 bilhões voltaram às vítimas pelo MED — e isso é um teto: a base não
+   informa o valor dos pedidos rejeitados (73% deles, em quantidade), então
+   sobre tudo o que foi contestado a proporção é menor.
+2. **Ficou parada por quatro anos e subiu em 2026.** Entre 6% e 9% ao ano de
+   2022 a 2025, e 14,5% em jan–abr/2026, quando entrou em vigor o MED 2.0, que
+   permite recuperar dinheiro já transferido pra outras contas — coincidência
+   no tempo clara, causa ainda não provada.
+3. **Quando não volta, quase sempre é porque a conta já foi esvaziada:** saldo
+   insuficiente responde por 86% do valor dos casos em que nada foi devolvido.
+
+**Um canal que fica fora desses 9%:** a base registra outros R$ 3,1 bilhões
+devolvidos por **bloqueio cautelar** — quando o banco de quem recebeu o Pix
+retém a transferência suspeita por até 72 horas, por conta própria, e a
+devolve à origem se confirma indício de fraude
+([BB](https://blog.bb.com.br/bloqueio-cautelar-pix/)). Não entra na conta
+porque não depende de a vítima contestar, e a base não diz se há sobreposição
+com o MED.
+
+---
+
+## O que mais apareceu no caminho
+
+- **O número absoluto engana.** De 2022 a 2025, o Pix cresceu 3,5×, os pedidos
+  de contestação 10,4× e as contestações aceitas 2,5×. Por transação, os
+  pedidos triplicaram, enquanto a fraude reconhecida pelas instituições caiu a
+  partir de 2025. Como quem reconhece é a própria instituição contestada, a
+  base não separa "menos fraude" de "crivo mais rígido".
+- **Cada mudança de regra coincide com um indicador diferente.** O botão de
+  contestação 100% digital (out/2025) com o salto no volume de pedidos e a
+  queda da taxa de aceite pra ~10%; o MED 2.0 (nov/2025 a fev/2026) com a alta
+  da devolução.
+- **A taxa de aceite caiu de ~81% para ~10% em quatro anos** — continuamente,
+  não só depois do botão digital.
+- **A base fecha.** A fórmula oficial do percentual de devolução foi
+  reconstruída (erro abaixo de 0,005 ponto percentual) e bateu com um número publicado na
+  imprensa; e o valor aceito se decompõe exatamente em devolvido, resíduo dos
+  casos parciais e casos sem devolução por motivo, nos 52 meses.
+
+---
+
 ## Progresso
 
 - [x] **0.** Repositório e pergunta
