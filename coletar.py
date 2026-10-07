@@ -49,6 +49,13 @@ CHAVE_UNICA = {
     "transacoes": ("AnoMes",),
 }
 
+# tabelas em que $filter=AnoMes eq AAAAMM funciona. Na de fraude ele quebra:
+# todo mes com dado volta erro (52/52 em 06/10/2026), e so os meses vazios
+# respondem. Sem filtro, cada consulta traz todos os meses a partir do pedido,
+# o que pra fraude (uma linha por mes) e inofensivo e ainda da redundancia.
+# municipio e cnae: nao testadas.
+FILTRO_MES = {"transacoes"}
+
 TENTATIVAS = 3
 ESPERA_BASE = 1  # segundos; cresce a cada nova tentativa
 
@@ -85,16 +92,17 @@ def desembrulhar(corpo):
         return None
 
 
-def montar_url(entidade, parametro, valor):
+def montar_url(entidade, parametro, valor, filtrar_mes=False):
     """Monta a URL no formato exigido pela Olinda: Entidade(Param=@Param).
 
     O parametro sozinho devolve todos os meses a partir de `valor`, nao so
-    ele; o $filter restringe ao mes exato. Sem isso, varrer mes a mes baixa a
-    tabela inteira de novo a cada mes.
+    ele; `filtrar_mes` acrescenta $filter pra restringir ao mes exato — so
+    funciona em algumas tabelas (ver FILTRO_MES).
     """
+    filtro = f"&$filter=AnoMes%20eq%20{valor}" if filtrar_mes else ""
     return (
         f"{BASE}/{entidade}({parametro}=@{parametro})"
-        f"?@{parametro}='{valor}'&$filter=AnoMes%20eq%20{valor}&$format=json"
+        f"?@{parametro}='{valor}'{filtro}&$format=json"
     )
 
 
@@ -129,7 +137,7 @@ def coletar_mes(tabela, mes):
     errado nao melhora tentando de novo.
     """
     entidade, parametro = TABELAS[tabela]
-    url = montar_url(entidade, parametro, mes)
+    url = montar_url(entidade, parametro, mes, filtrar_mes=tabela in FILTRO_MES)
 
     for tentativa in range(TENTATIVAS):
         status, corpo = requisitar(url)
@@ -268,7 +276,14 @@ def gravar_csv(linhas, caminho):
 
 
 def gravar_snapshot(linhas, tabela, pasta="dados/snapshots", hoje=None):
-    """Grava um retrato datado da coleta. Nunca sobrescreve um ja existente."""
+    """Grava um retrato datado da coleta. Nunca sobrescreve um ja existente.
+
+    Coleta vazia nao vira snapshot: como o do dia nunca e sobrescrito, um
+    snapshot vazio de uma rodada que falhou bloquearia o certo ate o dia
+    seguinte. Devolve None nesse caso.
+    """
+    if not linhas:
+        return None
     hoje = hoje or date.today().isoformat()
     caminho = os.path.join(pasta, f"{tabela}_{hoje}.json")
     if os.path.exists(caminho):

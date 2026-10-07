@@ -79,11 +79,24 @@ class TesteMontarUrl(unittest.TestCase):
         self.assertIn("DataBase=@DataBase", url)
         self.assertIn("@DataBase='202201'", url)
 
-    def test_filtra_o_mes_exato(self):
+    def test_filtra_o_mes_exato_quando_pedido(self):
         # sem $filter, a Olinda devolve todos os meses a partir do pedido
-        url = coletar.montar_url("EstatisticasFraudesPix", "Database", 202201)
+        url = coletar.montar_url("EstatisticasTransacoesPix", "Database", 202201, filtrar_mes=True)
         self.assertIn("$filter=AnoMes%20eq%20202201", url)
         self.assertNotIn(" ", url)
+
+    def test_sem_filtro_por_padrao(self):
+        url = coletar.montar_url("EstatisticasFraudesPix", "Database", 202201)
+        self.assertNotIn("$filter", url)
+
+    @patch("coletar.requisitar")
+    def test_filtro_so_nas_tabelas_que_aceitam(self, requisitar_mock):
+        # na tabela de fraude o $filter devolve erro em todo mes com dado
+        requisitar_mock.return_value = (200, '{"value": []}')
+        coletar.coletar_mes("fraude", 202201)
+        self.assertNotIn("$filter", requisitar_mock.call_args[0][0])
+        coletar.coletar_mes("transacoes", 202201)
+        self.assertIn("$filter", requisitar_mock.call_args[0][0])
 
 
 class TesteGerarMeses(unittest.TestCase):
@@ -288,6 +301,11 @@ class TesteGravacao(unittest.TestCase):
         coletar.gravar_snapshot([{"a": 999}], "fraude", pasta=self.pasta, hoje="2026-01-01")
         with open(caminho, encoding="utf-8") as arquivo:
             self.assertEqual(arquivo.read(), original)
+
+    def test_coleta_vazia_nao_vira_snapshot(self):
+        # senao o snapshot vazio de uma rodada que falhou bloqueia o do dia
+        self.assertIsNone(coletar.gravar_snapshot([], "fraude", pasta=self.pasta, hoje="2026-01-01"))
+        self.assertEqual(os.listdir(self.pasta), [])
 
     def test_cobertura(self):
         cobertura = {202201: (10, "ok"), 202202: (0, "vazio")}
