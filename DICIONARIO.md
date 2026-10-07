@@ -1,7 +1,11 @@
 # Dicionário de dados
 
-Descrição das colunas da tabela `EstatisticasFraudesPix`, do Portal de Dados
-Abertos do Banco Central.
+Descrição das colunas dos dois arquivos de `dados/`, vindos do Portal de Dados
+Abertos do Banco Central: [`fraude.csv`](#dadosfraudecsv) (tabela
+`EstatisticasFraudesPix`) e [`transacoes.csv`](#dadostransacoescsv) (tabela
+`EstatisticasTransacoesPix`, agregada por mês).
+
+# `dados/fraude.csv`
 
 > Preenchido na etapa 2, a partir do nome de cada coluna, do domínio do MED e
 > de checagens diretas em cima dos dados reais coletados (`dados/fraude.csv`,
@@ -57,6 +61,31 @@ Abertos do Banco Central.
 | `ValorPixbloqueadoscautelarmenteeliberados` | Decimal | Valor correspondente, em reais. É a coluna de maior variação da tabela: de ~R$ 18 milhões a ~R$ 5,5 bilhões num único mês. |
 | `QtdePixbloqueadoscautelarmenteedevolvidos` | Decimal | Quantidade de Pix bloqueados cautelarmente e devolvidos — aqui a apuração aparentemente confirmou a fraude e o valor retornou à vítima. Mesma ressalva: leitura pelo nome da coluna, não por documentação oficial. |
 | `ValorPixbloqueadoscautelarmenteedevolvidos` | Decimal | Valor correspondente, em reais. |
+
+---
+
+# `dados/transacoes.csv`
+
+Total mensal de transações Pix, a partir da tabela `EstatisticasTransacoesPix`.
+É o denominador da etapa 7 (`notebooks/05-normalizacao.ipynb`).
+
+A tabela original tem uma linha por combinação de PF/PJ do pagador e do
+recebedor, região, faixa de idade, forma de iniciação, natureza e finalidade —
+de 1,8 mil a 17 mil linhas por mês, centenas de MB no total. O coletor soma
+por mês e grava só o resultado.
+
+**Escopo, segundo a [descrição oficial](https://dadosabertos.bcb.gov.br/dataset/pix/resource/d5430811-0ef7-4404-bc87-d76aa5cfebcd):**
+"Não inclui Pix liquidados nos livros do participante, isto é, transações não
+enviadas para liquidação no SPI" — ficam de fora as transferências entre
+contas da mesma instituição. Em 2025, isso dá 89% da quantidade e 84% do valor
+publicados pelo BC no total, com o mesmo crescimento anual.
+
+| Coluna | Tipo | Descrição |
+|---|---|---|
+| `AnoMes` | Int | Mês de referência, AAAAMM. Uma linha por mês, de nov/2020 (mês parcial: o Pix começou em 16/11/2020) até o último publicado. |
+| `VALOR` | Decimal | Soma em reais do valor das transações do mês. |
+| `QUANTIDADE` | Int | Soma do número de transações do mês. |
+| `LinhasOrigem` | Int | Quantas linhas da tabela original entraram no total. Não é dado do BC — é controle da coleta: muitos meses com o mesmo número redondo indicariam resposta cortada pela API. |
 
 ---
 

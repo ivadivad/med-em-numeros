@@ -58,6 +58,11 @@ A tabela principal é `EstatisticasFraudesPix`, com 24 colunas cobrindo
 contestações registradas, aceitas e rejeitadas, valores devolvidos integral e
 parcialmente, motivos de não devolução e bloqueios cautelares.
 
+A segunda é `EstatisticasTransacoesPix`, o total de transações Pix por mês —
+o denominador que permite dizer se a fraude cresceu mais ou menos que o
+próprio Pix. Ela exclui transferências entre contas da mesma instituição
+(cerca de 11% das transações).
+
 ### Notas sobre a API
 
 A API roda na plataforma Olinda, do BCB, e tem particularidades que custaram
@@ -85,6 +90,8 @@ tempo para descobrir. Ficam registradas aqui para quem for usar:
 ├── dados/
 │   ├── fraude.csv             # consolidado, uma linha por mês
 │   ├── fraude_cobertura.csv   # o que a última coleta encontrou em cada mês
+│   ├── transacoes.csv         # total de transações Pix por mês
+│   ├── transacoes_cobertura.csv
 │   └── snapshots/             # retrato datado de cada coleta, nunca sobrescrito
 ├── notebooks/                 # análise, um notebook por etapa
 └── graficos/                  # PNGs gerados pelos notebooks
@@ -104,7 +111,11 @@ Coletar os dados (não precisa instalar nada, só biblioteca padrão do Python 3
 git clone https://github.com/ivadivad/med-em-numeros.git
 cd med-em-numeros
 python coletar.py fraude
+python coletar.py transacoes   # demora: baixa centenas de MB, grava só o total mensal
 ```
+
+Rodar de novo é seguro: o coletor mescla com o que já existe em `dados/`, e um
+mês que falhar numa rodada não apaga o que já tinha sido coletado.
 
 Rodar os testes:
 
