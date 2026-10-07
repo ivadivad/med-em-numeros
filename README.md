@@ -42,6 +42,10 @@ Com os dados de jan/2022 a abr/2026:
 3. **Quando não volta, quase sempre é porque a conta já foi esvaziada:** saldo
    insuficiente responde por 86% do valor dos casos em que nada foi devolvido.
 
+![Percentual de devolução por mês, de jan/2022 a abr/2026: entre 3% e 12% até 2025, entre 13% e 16% nos quatro meses de 2026](graficos/03-percentual-devolucao.png)
+
+![Composição do valor sem devolução por motivo, mês a mês: saldo insuficiente domina o período inteiro; conta encerrada some a partir de ago/2022](graficos/06-motivos-nao-devolucao.png)
+
 **Um canal que fica fora desses 9%:** a base registra outros R$ 3,1 bilhões
 devolvidos por **bloqueio cautelar** — quando o banco de quem recebeu o Pix
 retém a transferência suspeita por até 72 horas, por conta própria, e a
@@ -59,6 +63,9 @@ com o MED.
   pedidos triplicaram, enquanto a fraude reconhecida pelas instituições caiu a
   partir de 2025. Como quem reconhece é a própria instituição contestada, a
   base não separa "menos fraude" de "crivo mais rígido".
+
+  ![Índice com média de 2022 = 100: transações Pix chegam a ~400, pedidos de contestação a ~1.700 e contestações aceitas ficam em ~220](graficos/05-absoluto-vs-normalizado.png)
+
 - **Cada mudança de regra coincide com um indicador diferente.** O botão de
   contestação 100% digital (out/2025) com o salto no volume de pedidos e a
   queda da taxa de aceite pra ~10%; o MED 2.0 (nov/2025 a fev/2026) com a alta
