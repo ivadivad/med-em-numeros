@@ -86,6 +86,8 @@ tempo para descobrir. Ficam registradas aqui para quem for usar:
 .
 ├── coletar.py                 # coleta da API, mês a mês, mesclando com o que já existe
 ├── teste_coletar.py           # testes do coletor
+├── visual.py                  # padrão visual de todos os gráficos: grafico() e salvar()
+├── teste_visual.py            # testes do padrão visual
 ├── DICIONARIO.md              # o que significa cada coluna, e o que ainda não se sabe
 ├── dados/
 │   ├── fraude.csv             # consolidado, uma linha por mês
@@ -120,11 +122,13 @@ mês que falhar numa rodada não apaga o que já tinha sido coletado.
 Rodar os testes:
 
 ```bash
-python teste_coletar.py
+python teste_coletar.py   # só biblioteca padrão
+python teste_visual.py    # precisa de matplotlib (pip install -r requirements.txt)
 ```
 
-Os notebooks leem o CSV direto da URL bruta deste repositório, então abrem e
-rodam no Colab sem precisar de upload.
+Os notebooks leem os CSVs e o `visual.py` direto da URL bruta deste
+repositório, então abrem e rodam no Colab sem precisar de upload. Fora do
+repositório, os PNGs vão pra uma pasta `graficos/` criada ao lado do notebook.
 
 ---
 
