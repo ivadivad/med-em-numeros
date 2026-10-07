@@ -39,7 +39,7 @@ São três perguntas encadeadas:
 - [x] **7.** Normalização pelo volume total de Pix
 - [x] **8.** Decomposição dos motivos de não devolução
 - [x] **9.** Comparação entre períodos
-- [ ] **10.** Padronização visual
+- [x] **10.** Padronização visual
 - [ ] **11.** Escrita final
 - [ ] **12.** Atualização automática mensal
 
