@@ -1,0 +1,74 @@
+[
+  {
+    "AnoMes": 202510,
+    "VALOR": 2766788281273.47,
+    "QUANTIDADE": 6453005306,
+    "LinhasOrigem": 15468
+  },
+  {
+    "AnoMes": 202511,
+    "VALOR": 2607786621810.21,
+    "QUANTIDADE": 6460898392,
+    "LinhasOrigem": 17285
+  },
+  {
+    "AnoMes": 202512,
+    "VALOR": 3146763361528.93,
+    "QUANTIDADE": 7098633064,
+    "LinhasOrigem": 16132
+  },
+  {
+    "AnoMes": 202601,
+    "VALOR": 2700003643911.11,
+    "QUANTIDADE": 6364175378,
+    "LinhasOrigem": 16088
+  },
+  {
+    "AnoMes": 202602,
+    "VALOR": 2563439315830.25,
+    "QUANTIDADE": 5986274045,
+    "LinhasOrigem": 16038
+  },
+  {
+    "AnoMes": 202603,
+    "VALOR": 3012737794734.1,
+    "QUANTIDADE": 6741996455,
+    "LinhasOrigem": 13227
+  },
+  {
+    "AnoMes": 202604,
+    "VALOR": 2896675312318.1,
+    "QUANTIDADE": 6680896774,
+    "LinhasOrigem": 13229
+  },
+  {
+    "AnoMes": 202605,
+    "VALOR": 2957488405988.77,
+    "QUANTIDADE": 7121879045,
+    "LinhasOrigem": 13632
+  },
+  {
+    "AnoMes": 202606,
+    "VALOR": 3044127221869.05,
+    "QUANTIDADE": 6982273524,
+    "LinhasOrigem": 13753
+  },
+  {
+    "AnoMes": 202607,
+    "VALOR": 3223292570448.9,
+    "QUANTIDADE": 7238374542,
+    "LinhasOrigem": 13433
+  },
+  {
+    "AnoMes": 202608,
+    "VALOR": 3174483088769.55,
+    "QUANTIDADE": 7366981446,
+    "LinhasOrigem": 13374
+  },
+  {
+    "AnoMes": 202609,
+    "VALOR": 3225144302036.91,
+    "QUANTIDADE": 7169724394,
+    "LinhasOrigem": 13350
+  }
+]
