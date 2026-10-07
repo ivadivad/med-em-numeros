@@ -49,11 +49,12 @@ CHAVE_UNICA = {
     "transacoes": ("AnoMes",),
 }
 
-# tabelas em que $filter=AnoMes eq AAAAMM funciona. Na de fraude ele quebra:
-# todo mes com dado volta erro (52/52 em 06/10/2026), e so os meses vazios
-# respondem. Sem filtro, cada consulta traz todos os meses a partir do pedido,
-# o que pra fraude (uma linha por mes) e inofensivo e ainda da redundancia.
-# municipio e cnae: nao testadas.
+# tabelas em que $filter=AnoMes eq AAAAMM foi confirmado. Na de fraude nao
+# deu pra testar: desde 06/10/2026 a API devolve 500 em qualquer consulta a
+# essa tabela que tenha linha pra devolver, com ou sem filtro (so meses vazios
+# respondem). Fica a consulta sem filtro, a unica comprovada nela — cada
+# consulta traz todos os meses a partir do pedido, o que pra fraude (uma linha
+# por mes) e inofensivo e ainda da redundancia. municipio e cnae: nao testadas.
 FILTRO_MES = {"transacoes"}
 
 TENTATIVAS = 3
@@ -131,10 +132,12 @@ def gerar_meses(desde, ate=None):
 def coletar_mes(tabela, mes):
     """Busca os dados de um mes. Devolve (linhas, situacao).
 
-    situacao: "ok", "vazio", "erro_400" ou "falha_rede".
-    Reentrega em erro 500 e em falha de rede (status None — timeout ou conexao
-    recusada), com espera crescente. Erro 400 nao reentrega, porque parametro
-    errado nao melhora tentando de novo.
+    situacao: "ok", "vazio", "erro_400", "erro_500" (o servidor respondeu com
+    erro em todas as tentativas), "falha_rede" (nem chegou resposta: timeout ou
+    conexao recusada) ou "erro_<codigo>" pra qualquer outro status. Separar
+    500 de falha de rede importa: uma e problema do BC, a outra da sua conexao.
+    Reentrega em 500 e em falha de rede, com espera crescente. Erro 400 nao
+    reentrega, porque parametro errado nao melhora tentando de novo.
     """
     entidade, parametro = TABELAS[tabela]
     url = montar_url(entidade, parametro, mes, filtrar_mes=tabela in FILTRO_MES)
@@ -154,7 +157,7 @@ def coletar_mes(tabela, mes):
             time.sleep(ESPERA_BASE * (tentativa + 1))
             continue
 
-        return [], "falha_rede"
+        return [], ("falha_rede" if status is None else f"erro_{status}")
 
     return [], "falha_rede"
 

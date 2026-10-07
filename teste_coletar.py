@@ -137,7 +137,16 @@ class TesteColetarMes(unittest.TestCase):
         requisitar_mock.return_value = (500, "erro interno")
         _, situacao = coletar.coletar_mes("fraude", 202201)
         self.assertEqual(requisitar_mock.call_count, coletar.TENTATIVAS)
-        self.assertEqual(situacao, "falha_rede")
+        # erro do servidor nao e falha de rede: confundir os dois ja levou a
+        # um diagnostico errado
+        self.assertEqual(situacao, "erro_500")
+
+    @patch("coletar.requisitar")
+    def test_outro_status_e_registrado_sem_reentrega(self, requisitar_mock):
+        requisitar_mock.return_value = (503, "indisponivel")
+        _, situacao = coletar.coletar_mes("fraude", 202201)
+        self.assertEqual(requisitar_mock.call_count, 1)
+        self.assertEqual(situacao, "erro_503")
 
     @patch("coletar.time.sleep", return_value=None)
     @patch("coletar.requisitar")
