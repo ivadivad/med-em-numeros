@@ -38,7 +38,7 @@ São três perguntas encadeadas:
 - [x] **6.** Contexto regulatório
 - [x] **7.** Normalização pelo volume total de Pix
 - [x] **8.** Decomposição dos motivos de não devolução
-- [ ] **9.** Comparação entre períodos
+- [x] **9.** Comparação entre períodos
 - [ ] **10.** Padronização visual
 - [ ] **11.** Escrita final
 - [ ] **12.** Atualização automática mensal
