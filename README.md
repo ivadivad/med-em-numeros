@@ -7,9 +7,11 @@ Devolução**, o sistema do Banco Central que devolve valores a quem foi vítima
 fraude no Pix. Os dados são coletados direto da API do BCB, arquivados mês a mês
 e analisados em notebooks reprodutíveis.
 
-> **Projeto em construção, publicado passo a passo.**
-> Cada etapa vira um commit assim que fica pronta, em vez de esperar o projeto
-> inteiro. O histórico do repositório é parte do trabalho.
+> **Projeto concluído em outubro de 2026, publicado passo a passo.**
+> Cada etapa virou um commit assim que ficou pronta, em vez de esperar o
+> projeto inteiro — o histórico do repositório é parte do trabalho, incluindo
+> as correções. Os dados seguem se atualizando sozinhos todo mês (ver
+> [Atualização automática](#atualização-automática)).
 
 ---
 
@@ -149,7 +151,7 @@ Valem pra qualquer conclusão acima.
 - [x] **9.** Comparação entre períodos
 - [x] **10.** Padronização visual
 - [x] **11.** Escrita final
-- [ ] **12.** Atualização automática mensal
+- [x] **12.** Atualização automática mensal
 
 ---
 
